@@ -1,0 +1,83 @@
+/* ==================================================
+TYPING TEXT COMPONENT STYLES
+- Zero layout jump (ghost text reserves geometry)
+- Thin inline cursor with smooth opacity blink
+- Electric Blue & Black cursor themes
+================================================== */
+
+.typing-text-container {
+display: flex;
+flex-direction: column;
+align-items: center;
+text-align: center;
+position: relative;
+width: 100%;
+}
+
+.typing-line {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+position: relative;
+line-height: inherit;
+letter-spacing: inherit;
+font-family: inherit;
+font-weight: inherit;
+font-size: inherit;
+white-space: pre-wrap;
+}
+
+.typed-visible {
+display: inline;
+}
+
+/* Ghost text keeps line width / height 100% constant */
+.typed-ghost {
+display: inline;
+opacity: 0 !important;
+visibility: hidden;
+user-select: none;
+pointer-events: none;
+}
+
+/* Text Cursor */
+.typing-cursor {
+display: inline-block;
+width: 3.5px;
+height: 0.88em;
+margin-left: 2px;
+margin-right: -5.5px;
+border-radius: 2px;
+vertical-align: -0.06em;
+transition: opacity 0.12s ease;
+pointer-events: none;
+}
+
+.typing-cursor.blue-cursor {
+background-color: #0000FF;
+}
+
+.typing-cursor.black-cursor {
+background-color: #080808;
+}
+
+.typing-cursor.cursor-visible {
+opacity: 1;
+}
+
+.typing-cursor.cursor-hidden {
+opacity: 0;
+}
+
+@media (max-width: 768px) {
+.typing-cursor {
+width: 2.5px;
+margin-right: -4px;
+}
+}
+
+@media (prefers-reduced-motion: reduce) {
+.typing-cursor {
+display: none !important;
+}
+}

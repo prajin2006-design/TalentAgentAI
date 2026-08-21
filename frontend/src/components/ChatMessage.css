@@ -1,0 +1,211 @@
+.chat-message-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.chat-message-row.user {
+  flex-direction: row-reverse;
+}
+
+.avatar-box {
+  flex-shrink: 0;
+}
+
+.ai-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-primary, #243BFF);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #F2F4F7;
+  color: var(--color-text, #111318);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message-bubble-wrapper {
+  max-width: 82%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.chat-message-row.user .message-bubble-wrapper {
+  align-items: flex-end;
+}
+
+.message-header-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #647089);
+  font-family: var(--font-sans);
+}
+
+.sender-name {
+  font-weight: 700;
+  color: #111318;
+}
+
+.message-bubble {
+  padding: 1.25rem 1.5rem;
+  border-radius: 14px;
+  font-size: 0.925rem;
+  line-height: 1.55;
+  color: var(--color-text, #111318);
+}
+
+.chat-message-row.ai .message-bubble {
+  border-top-left-radius: 4px;
+  background-color: #FFFFFF;
+  border: 1px solid #E1E5EC;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
+}
+
+.chat-message-row.user .message-bubble {
+  border-top-right-radius: 4px;
+  background-color: var(--color-primary, #243BFF);
+  color: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(36, 59, 255, 0.1);
+}
+
+/* Markdown response formatting inside AI bubble */
+.markdown-response {
+  line-height: 1.6;
+  font-size: 0.925rem;
+  color: #1F2A37;
+}
+
+.markdown-response h1,
+.markdown-response h2,
+.markdown-response h3 {
+  color: #111318;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.015em;
+  font-family: var(--font-sans);
+}
+
+.markdown-response h1 { font-size: 1.25rem; }
+.markdown-response h2 { font-size: 1.15rem; }
+.markdown-response h3 { font-size: 1.05rem; }
+
+.markdown-response p {
+  margin-bottom: 0.75rem;
+}
+
+.markdown-response ul,
+.markdown-response ol {
+  margin-bottom: 0.75rem;
+  padding-left: 1.25rem;
+}
+
+.markdown-response li {
+  margin-bottom: 0.25rem;
+}
+
+.markdown-response strong {
+  color: #111318;
+  font-weight: 600;
+}
+
+.markdown-response blockquote {
+  border-left: 3px solid var(--color-primary, #243BFF);
+  padding-left: 0.75rem;
+  color: #4B5563;
+  font-style: italic;
+  margin: 0.75rem 0;
+}
+
+.markdown-response a {
+  color: var(--color-primary, #243BFF);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.markdown-response a:hover {
+  color: var(--color-primary-hover, #263BE6);
+}
+
+.markdown-response pre {
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  border-radius: 8px;
+}
+
+.markdown-response code {
+  padding: .1rem .3rem;
+  background: rgba(0, 0, 0, .06);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.85em;
+}
+
+.markdown-response pre code {
+  padding: 0;
+  background: transparent;
+  font-size: 0.9em;
+}
+
+.markdown-response table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .85rem;
+  margin: 0.75rem 0;
+}
+
+.markdown-response th, .markdown-response td {
+  padding: .45rem;
+  border: 1px solid #E1E5EC;
+  text-align: left;
+}
+
+/* Action button row below AI message */
+.message-actions-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  border-top: 1px solid #F3F4F6;
+  padding-top: 0.65rem;
+}
+
+.btn-chat-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 32px;
+  padding: 0 0.75rem;
+  background-color: transparent;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4B5563;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-chat-action:hover {
+  background-color: #F3F4F6;
+  color: var(--color-primary, #243BFF);
+  border-color: #D1D5DB;
+}
+
+.user-query-text {
+  font-size: 0.95rem;
+  color: #FFFFFF;
+}

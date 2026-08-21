@@ -1,0 +1,177 @@
+/* ==========================================================================
+Talent Agent AI — Job Matching & Recommendation Matrix
+Solid White Surfaces, Clean 1px Borders, Normal SaaS System
+========================================================================== */
+
+.job-matching-wrapper {
+display: flex;
+flex-direction: column;
+gap: 1.5rem;
+}
+
+.matching-banner-card {
+padding: 1.5rem 1.75rem;
+background-color: #FFFFFF;
+border: 1px solid var(--color-border, #E5E7EB);
+border-radius: 14px;
+display: flex;
+flex-direction: column;
+gap: 1.25rem;
+box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.banner-top-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.live-jobs-count {
+font-size: 0.775rem;
+font-weight: 600;
+color: var(--color-muted, #667085);
+}
+
+.matrix-overview-grid {
+display: grid;
+grid-template-columns: 1fr 0.3fr 1fr;
+gap: 1.25rem;
+align-items: center;
+padding-top: 1rem;
+border-top: 1px solid #F3F4F6;
+}
+
+.candidate-skills-box, .target-profile-box {
+display: flex;
+flex-direction: column;
+gap: 0.5rem;
+background-color: #F8FAFC;
+border: 1px solid var(--color-border, #E5E7EB);
+padding: 1.15rem;
+border-radius: 10px;
+}
+
+.box-label {
+font-size: 0.7rem;
+font-weight: 700;
+color: var(--color-primary, #243BFF);
+letter-spacing: 0.06em;
+text-transform: uppercase;
+}
+
+.matrix-tags-flex {
+display: flex;
+flex-wrap: wrap;
+gap: 0.35rem;
+}
+
+.matrix-arrow-box {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 0.35rem;
+text-align: center;
+}
+
+.pulse-arrow-icon {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+background: var(--color-primary-subtle, #EEF2FF);
+border: 1px solid rgba(36, 59, 255, 0.15);
+color: var(--color-primary, #243BFF);
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.matrix-label {
+font-size: 0.68rem;
+font-weight: 600;
+color: var(--color-muted, #667085);
+letter-spacing: 0.04em;
+}
+
+.target-role-name {
+font-size: 1.1rem;
+font-weight: 700;
+color: var(--color-text, #111827);
+}
+
+.target-location {
+font-size: 0.8rem;
+color: var(--color-muted, #667085);
+}
+
+.matching-filter-bar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 1.25rem;
+}
+
+.search-input-box {
+flex: 1;
+position: relative;
+}
+
+.filter-pills-row {
+display: flex;
+align-items: center;
+gap: 0.35rem;
+}
+
+.filter-btn {
+background-color: #FFFFFF;
+border: 1px solid var(--color-border, #E5E7EB);
+color: var(--color-muted, #667085);
+padding: 0.45rem 0.95rem;
+border-radius: 8px;
+font-size: 0.825rem;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.16s ease;
+}
+
+.filter-btn:hover {
+background-color: #F8FAFC;
+color: var(--color-text, #111827);
+border-color: #D1D5DB;
+}
+
+.filter-btn.active {
+border-color: var(--color-primary, #243BFF);
+color: var(--color-primary, #243BFF);
+background-color: var(--color-primary-subtle, #EEF2FF);
+font-weight: 700;
+}
+
+.jobs-matrix-grid {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 1.25rem;
+}
+
+.empty-state-card {
+grid-column: 1 / -1;
+padding: 3.5rem 2rem;
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 1rem;
+text-align: center;
+color: var(--color-muted, #667085);
+background-color: #FFFFFF;
+border: 1px solid var(--color-border, #E5E7EB);
+border-radius: 14px;
+}
+
+@media (max-width: 992px) {
+.matrix-overview-grid, .jobs-matrix-grid {
+grid-template-columns: 1fr;
+}
+.matching-filter-bar {
+flex-direction: column;
+align-items: stretch;
+}
+}

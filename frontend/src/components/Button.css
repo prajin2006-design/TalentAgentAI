@@ -1,0 +1,245 @@
+/* ==========================================================================
+   Talent Agent AI — Global Button System Styles
+   Hierarchy: Primary, Secondary, Ghost, Danger, Icon
+   Sizes: sm (34-36px), md (40-42px), lg (46-48px)
+   ========================================================================== */
+
+/* Base Styles applied to all buttons to prevent raw HTML defaults */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-tertiary,
+.btn-danger,
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans, 'Inter', -apple-system, sans-serif);
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1;
+  padding: 0.55rem 1.15rem;
+  min-height: 44px; /* Premium height */
+  border-radius: 10px; /* Radius 10px */
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  outline: none;
+  box-sizing: border-box;
+  user-select: none;
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+              color 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible,
+.btn-danger:focus-visible {
+  outline: 2px solid rgba(36, 59, 255, 0.4);
+  outline-offset: 2px;
+}
+
+.btn:active:not(:disabled),
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled),
+.btn-danger:active:not(:disabled) {
+  transform: translateY(0) scale(0.985);
+}
+
+.btn:disabled,
+.btn.disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   1. PRIMARY BUTTON (Solid #243BFF, Subtle Shadow, Micro-Hover)
+   -------------------------------------------------------------------------- */
+.btn-primary,
+button.btn-primary {
+  background-color: var(--color-primary, #243BFF);
+  color: #FFFFFF;
+  border-color: var(--color-primary, #243BFF);
+  box-shadow: 0 1px 2px rgba(36, 59, 255, 0.24);
+}
+
+.btn-primary:hover:not(:disabled),
+button.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-hover, #1A2FE0);
+  border-color: var(--color-primary-hover, #1A2FE0);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(36, 59, 255, 0.28);
+}
+
+/* --------------------------------------------------------------------------
+   2. SECONDARY BUTTON (White Surface, Clean 1px Border, Subtle Hover)
+   -------------------------------------------------------------------------- */
+.btn-secondary,
+button.btn-secondary {
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border, #E2E5EC);
+  border-color: var(--color-border, #E2E5EC);
+  color: var(--color-text, #111827);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.btn-secondary:hover:not(:disabled),
+button.btn-secondary:hover:not(:disabled) {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  color: var(--color-text, #111827);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* --------------------------------------------------------------------------
+   3. GHOST / TERTIARY BUTTON
+   -------------------------------------------------------------------------- */
+.btn-ghost,
+button.btn-ghost,
+.btn-tertiary,
+button.btn-tertiary {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--color-muted, #64748B);
+  box-shadow: none;
+}
+
+.btn-ghost:hover:not(:disabled),
+button.btn-ghost:hover:not(:disabled),
+.btn-tertiary:hover:not(:disabled),
+button.btn-tertiary:hover:not(:disabled) {
+  background-color: #F1F5F9;
+  color: var(--color-text, #111827);
+}
+
+/* --------------------------------------------------------------------------
+   4. DANGER BUTTON
+   -------------------------------------------------------------------------- */
+.btn-danger,
+button.btn-danger {
+  background-color: #DC2626;
+  color: #FFFFFF;
+  border-color: #DC2626;
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.2);
+}
+
+.btn-danger:hover:not(:disabled),
+button.btn-danger:hover:not(:disabled) {
+  background-color: #B91C1C;
+  border-color: #B91C1C;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+
+.btn-danger-outline,
+button.btn-danger-outline {
+  background-color: #FFFFFF;
+  color: #DC2626;
+  border-color: #FECACA;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.btn-danger-outline:hover:not(:disabled),
+button.btn-danger-outline:hover:not(:disabled) {
+  background-color: #FEF2F2;
+  border-color: #FCA5A5;
+  color: #B91C1C;
+}
+
+/* --------------------------------------------------------------------------
+   5. ICON BUTTON
+   -------------------------------------------------------------------------- */
+.btn-icon,
+button.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+  border-radius: 8px;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border, #E2E5EC);
+  color: var(--color-text, #111827);
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-icon:hover:not(:disabled),
+button.btn-icon:hover:not(:disabled) {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  color: var(--color-primary, #243BFF);
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   SIZE MODIFIERS
+   -------------------------------------------------------------------------- */
+.btn-sm,
+button.btn-sm {
+  padding: 0.38rem 0.85rem;
+  font-size: 0.8125rem;
+  min-height: 34px;
+  border-radius: 6px;
+  gap: 0.35rem;
+}
+
+.btn-icon.btn-sm,
+button.btn-icon.btn-sm {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  border-radius: 6px;
+}
+
+.btn-lg,
+button.btn-lg {
+  padding: 0.75rem 1.65rem;
+  font-size: 0.95rem;
+  min-height: 48px;
+  border-radius: 10px;
+  gap: 0.6rem;
+}
+
+.btn-icon.btn-lg,
+button.btn-icon.btn-lg {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   MICRO-ANIMATIONS: ARROW & SPINNER
+   -------------------------------------------------------------------------- */
+.btn-arrow-icon {
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn:hover:not(:disabled) .btn-arrow-icon {
+  transform: translateX(3px);
+}
+
+.btn-spinner {
+  margin-right: 0.25rem;
+}

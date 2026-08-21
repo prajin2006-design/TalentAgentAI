@@ -1,0 +1,132 @@
+.career-node-card {
+  display: flex;
+  gap: 1.5rem;
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  padding: 1.75rem;
+  position: relative;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  box-shadow: var(--shadow-subtle);
+}
+
+.career-node-card:hover {
+  transform: translateX(6px);
+  box-shadow: var(--shadow-hover);
+}
+
+.career-node-card.current {
+  background-color: #FFFFFF;
+  box-shadow: 0 10px 40px rgba(0, 0, 255, 0.08);
+}
+
+.node-badge-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.node-badge-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: var(--bg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.career-node-card.completed .node-badge-circle {
+  background-color: var(--primary-subtle);
+  color: var(--primary);
+}
+
+.career-node-card.current .node-badge-circle {
+  background-color: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.node-icon.completed {
+  color: var(--primary);
+}
+
+.node-icon.current {
+  color: #FFFFFF;
+}
+
+.node-icon.upcoming {
+  color: var(--text-secondary);
+}
+
+.node-index {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.node-content-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.node-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.node-stage-tag {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.node-role-title {
+  font-size: 1.25rem;
+  color: var(--text-dark);
+}
+
+.node-timeline {
+  font-size: 0.8rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--text-secondary);
+  background-color: var(--bg-muted);
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+}
+
+.node-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.node-skills-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.skills-box-title {
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.skills-box-flex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}

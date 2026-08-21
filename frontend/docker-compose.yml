@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+# MySQL Database Service
+mysql:
+image: mysql:8.0
+container_name: talent_agent_mysql
+restart: always
+environment:
+MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+MYSQL_DATABASE: ${DB_NAME:-talent_agent_ai}
+ports:
+- "3306:3306"
+volumes:
+- mysql_data:/var/lib/mysql
+- ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+healthcheck:
+test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD}"]
+interval: 5s
+timeout: 5s
+retries: 20
+
+# Talent Agent AI Full-Stack Application Service
+app:
+build:
+context: .
+dockerfile: Dockerfile
+container_name: talent_agent_app
+restart: always
+ports:
+- "5000:5000"
+environment:
+- DB_HOST=mysql
+- DB_PORT=3306
+- DB_USER=root
+- DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
+- DB_NAME=${DB_NAME:-talent_agent_ai}
+- JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT_SECRET_KEY must be set}
+- SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET must be set}
+- OPENAI_API_KEY=${OPENAI_API_KEY}
+- OPENAI_MODEL=${OPENAI_MODEL}
+- GEMINI_API_KEY=${GEMINI_API_KEY}
+- GEMINI_MODEL=${GEMINI_MODEL}
+- AI_PROVIDER=${AI_PROVIDER:-gemini}
+- CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5000}
+- MAIL_SERVER=${MAIL_SERVER:-smtp.gmail.com}
+- MAIL_PORT=${MAIL_PORT:-587}
+- MAIL_USE_TLS=${MAIL_USE_TLS:-true}
+- MAIL_USERNAME=${MAIL_USERNAME}
+- MAIL_PASSWORD=${MAIL_PASSWORD}
+- MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+- GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+- GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+depends_on:
+mysql:
+condition: service_healthy
+volumes:
+- app_uploads:/app/uploads
+
+volumes:
+mysql_data:
+app_uploads:

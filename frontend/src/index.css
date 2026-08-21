@@ -1,0 +1,623 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import './components/Button.css';
+
+:root {
+/* --------------------------------------------------------------------------
+TALENT AGENT AI — DESIGN SYSTEM TOKENS
+Palette: Premium, Minimal, Intelligent, Modern, Calm
+-------------------------------------------------------------------------- */
+--color-text: #111111;          /* Near Black */
+--color-surface: #FFFFFF;       /* Crisp White */
+--color-bg: #F8F9FB;            /* Calm Off-White */
+--color-bg-canvas: #F8F9FB;
+--color-primary: #243BFF;       /* Primary Electric Blue */
+--color-primary-hover: #1A2FE0; /* Refined Darker Blue */
+--color-primary-subtle: #EEF2FF;/* Soft Blue Accent Tint */
+--color-primary-glow: rgba(36, 59, 255, 0.12);
+--color-purple: #7C5CFF;        /* Secondary Intelligence Purple */
+--color-purple-subtle: #F4F1FF;
+--color-muted: #667085;         /* Muted Slate Body/Subtext */
+--color-muted-light: #98A2B3;
+--color-border: #E6E8EF;        /* Clean 1px Border */
+--color-border-subtle: #F0F2F6;
+--color-border-hover: #D0D5DD;
+
+--color-success: #16A34A;
+--color-warning: #F59E0B;
+--color-error: #DC2626;
+
+/* Backward Compatibility Aliases */
+--shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.02);
+--shadow-hover: 0 16px 40px rgba(0, 0, 255, 0.06);
+}
+
+/* Global Reset */
+*, *::before, *::after {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+html {
+scroll-behavior: smooth;
+font-size: 16px;
+background-color: var(--bg-canvas);
+color: var(--text-main);
+font-family: var(--font-body);
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+min-height: 100vh;
+overflow-x: hidden;
+background: var(--bg-canvas);
+color: var(--text-main);
+line-height: 1.5;
+}
+
+:root {
+--radius-sm: 8px;
+--radius-md: 12px;
+--radius-lg: 16px;
+--radius-card: 22px;
+--radius-hero: 28px;
+--radius-pill: 9999px;
+
+/* --------------------------------------------------------------------------
+TYPOGRAPHY TOKENS (Inter - High Readability)
+-------------------------------------------------------------------------- */
+--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+--font-display: var(--font-sans);
+--font-heading: var(--font-sans);
+--font-body: var(--font-sans);
+
+/* Font Scales */
+--text-hero: clamp(2.75rem, 5.5vw, 5.75rem);
+--text-section: clamp(2rem, 3.8vw, 3.75rem);
+--text-page: clamp(1.75rem, 2.5vw, 2.5rem);
+--text-card: 1.25rem;
+--text-body: 1.0rem;
+--text-body-sm: 0.875rem;
+--text-caption: 0.8125rem;
+
+/* --------------------------------------------------------------------------
+SHADOWS & ELEVATION (Calm, High-End Ambient)
+-------------------------------------------------------------------------- */
+--shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+--shadow-sm: 0 2px 8px rgba(16, 24, 40, 0.04), 0 1px 2px rgba(16, 24, 40, 0.02);
+--shadow-md: 0 8px 24px -4px rgba(16, 24, 40, 0.06), 0 2px 6px -1px rgba(16, 24, 40, 0.02);
+--shadow-lg: 0 16px 36px -6px rgba(16, 24, 40, 0.08), 0 4px 12px -2px rgba(16, 24, 40, 0.03);
+--shadow-primary: 0 8px 24px -4px rgba(36, 59, 255, 0.28);
+--shadow-subtle: var(--shadow-sm);
+--shadow-card: var(--shadow-sm);
+--shadow-hover: var(--shadow-md);
+
+/* --------------------------------------------------------------------------
+MOTION & EASING
+-------------------------------------------------------------------------- */
+--ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+
+
+
+
+
+
+
+
+
+}
+
+/* ==========================================================================
+GLOBAL RESET & DEFAULTS
+========================================================================== */
+
+*, *::before, *::after {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+html {
+scroll-behavior: smooth;
+font-size: 16px;
+background-color: var(--color-bg);
+color: var(--color-text);
+font-family: var(--font-sans);
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+}
+
+section[id], div[id] {
+scroll-margin-top: calc(var(--nav-h) + 20px);
+}
+
+body {
+min-height: 100vh;
+overflow-x: hidden;
+background-color: var(--color-bg);
+color: var(--color-text);
+line-height: 1.55;
+font-weight: 400;
+}
+
+/* Minimal Custom Scrollbar */
+::-webkit-scrollbar {
+width: 6px;
+height: 6px;
+}
+
+::-webkit-scrollbar-track {
+background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+background: #D0D5DD;
+border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+background: #98A2B3;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+padding-left: 1.5rem;
+padding-right: 1.5rem;
+}
+
+.container-narrow {
+width: 100%;
+max-width: 880px;
+margin-left: auto;
+margin-right: auto;
+padding-left: 1.5rem;
+padding-right: 1.5rem;
+}
+
+/* ==========================================================================
+BUTTON SYSTEM (Premium, Normal, Tactile)
+========================================================================== */
+
+.btn {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 0.5rem;
+font-family: var(--font-sans);
+font-weight: 600;
+font-size: 0.9375rem;
+padding: 0.625rem 1.25rem;
+min-height: 44px;
+border-radius: var(--radius-md);
+cursor: pointer;
+transition: transform var(--duration-fast) var(--ease-out-quint),
+background-color var(--duration-fast) var(--ease-out-quint),
+border-color var(--duration-fast) var(--ease-out-quint),
+box-shadow var(--duration-fast) var(--ease-out-quint),
+color var(--duration-fast) var(--ease-out-quint);
+text-decoration: none;
+white-space: nowrap;
+border: 1px solid transparent;
+outline: none;
+}
+
+.btn:active {
+transform: translateY(0) scale(0.985);
+}
+
+.btn:disabled {
+opacity: 0.55;
+cursor: not-allowed;
+transform: none !important;
+box-shadow: none !important;
+}
+
+/* 1. PRIMARY BUTTON */
+.btn-primary, .btn-accent {
+background-color: var(--color-primary);
+color: #FFFFFF;
+border-color: var(--color-primary);
+box-shadow: 0 1px 3px rgba(36, 59, 255, 0.2);
+}
+
+.btn-primary:hover:not(:disabled), .btn-accent:hover:not(:disabled) {
+background-color: var(--color-primary-hover);
+border-color: var(--color-primary-hover);
+transform: translateY(-2px);
+box-shadow: var(--shadow-primary);
+}
+
+/* 2. SECONDARY BUTTON */
+.btn-secondary, .btn-outline, .btn-primary-outline {
+background-color: #FFFFFF;
+border-color: #DDE1EA;
+color: var(--color-text);
+box-shadow: var(--shadow-xs);
+}
+
+.btn-secondary:hover:not(:disabled), .btn-outline:hover:not(:disabled), .btn-primary-outline:hover:not(:disabled) {
+background-color: #F8FAFC;
+border-color: #CBD5E1;
+color: var(--color-text);
+transform: translateY(-2px);
+box-shadow: var(--shadow-sm);
+}
+
+/* 3. GHOST / TERTIARY BUTTON */
+.btn-ghost, .btn-tertiary {
+background-color: transparent;
+border-color: transparent;
+color: var(--color-text);
+}
+
+.btn-ghost:hover:not(:disabled), .btn-tertiary:hover:not(:disabled) {
+background-color: #F1F5F9;
+color: var(--color-primary);
+}
+
+/* 4. DANGER BUTTON */
+.btn-danger {
+background-color: var(--color-error);
+color: #FFFFFF;
+border-color: var(--color-error);
+}
+
+.btn-danger:hover:not(:disabled) {
+background-color: #B91C1C;
+border-color: #B91C1C;
+transform: translateY(-2px);
+}
+
+.btn-danger-outline {
+background-color: #FFFFFF;
+color: var(--color-error);
+border-color: #FECACA;
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+background-color: #FEF2F2;
+border-color: var(--color-error);
+}
+
+/* 5. ICON BUTTON */
+.btn-icon {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+width: 40px;
+height: 40px;
+min-height: 40px;
+padding: 0;
+border-radius: var(--radius-sm);
+background-color: #FFFFFF;
+border: 1px solid var(--color-border);
+color: var(--color-text);
+cursor: pointer;
+transition: all var(--transition-fast);
+}
+
+.btn-icon:hover:not(:disabled) {
+background-color: #F8FAFC;
+border-color: var(--color-border-hover);
+color: var(--color-primary);
+transform: translateY(-1px);
+}
+
+
+/* Button Sizing Modifiers */
+
+.btn-sm {
+
+padding: 0.4rem 0.85rem;
+
+font-size: 0.85rem;
+
+min-height: 36px;
+
+border-radius: var(--radius-sm);
+
+}
+
+
+.btn-lg {
+
+padding: 0.85rem 1.75rem;
+
+font-size: 1.05rem;
+
+min-height: 52px;
+
+border-radius: var(--radius-md);
+
+}
+
+
+.btn-full {
+
+width: 100%;
+
+}
+
+
+/* ==========================================================================
+
+CARDS & SURFACES (Clean, 1px Border, Restrained Elevation)
+
+========================================================================== */
+
+
+.card {
+
+background-color: var(--color-surface);
+
+border: 1px solid var(--color-border);
+
+border-radius: var(--radius-card);
+
+padding: 1.75rem;
+
+box-shadow: var(--shadow-sm);
+
+
+
+
+
+
+
+
+
+
+.card-interactive {
+
+cursor: pointer;
+
+}
+
+
+.card-interactive:hover {
+
+transform: translateY(-2px);
+
+border-color: var(--color-border-hover);
+
+box-shadow: var(--shadow-md);
+
+}
+
+
+/* ==========================================================================
+
+INPUT SYSTEM (Clean, Solid, 1px Border)
+
+========================================================================== */
+
+
+.input-field, .input-field-auth {
+
+width: 100%;
+
+background-color: #FFFFFF;
+
+border: 1px solid var(--color-border);
+
+border-radius: var(--radius-md);
+
+padding: 0.75rem 1rem;
+
+color: var(--color-text);
+
+font-family: var(--font-sans);
+
+font-size: 0.9375rem;
+
+transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+outline: none;
+
+}
+
+
+.input-field:focus, .input-field-auth:focus {
+
+border-color: var(--color-primary);
+
+box-shadow: 0 0 0 3px var(--color-primary-glow);
+
+}
+
+
+.input-field::placeholder, .input-field-auth::placeholder {
+
+color: var(--color-muted-light);
+
+}
+
+
+/* ==========================================================================
+
+BADGES & CHIPS
+
+========================================================================== */
+
+
+.badge {
+
+
+
+
+
+
+}
+
+/* Button Sizing Modifiers */
+.btn-sm {
+padding: 0.4rem 0.85rem;
+font-size: 0.85rem;
+min-height: 36px;
+border-radius: var(--radius-sm);
+}
+
+.btn-lg {
+padding: 0.85rem 1.75rem;
+font-size: 1.05rem;
+min-height: 52px;
+border-radius: var(--radius-md);
+}
+
+.btn-full {
+width: 100%;
+}
+
+/* ==========================================================================
+CARDS & SURFACES (Clean, 1px Border, Restrained Elevation)
+========================================================================== */
+
+.card {
+background-color: var(--color-surface);
+border: 1px solid var(--color-border);
+border-radius: var(--radius-card);
+padding: 1.75rem;
+box-shadow: var(--shadow-sm);
+}
+}
+
+.card-interactive {
+cursor: pointer;
+}
+
+.card-interactive:hover {
+transform: translateY(-2px);
+border-color: var(--color-border-hover);
+box-shadow: var(--shadow-md);
+}
+
+/* ==========================================================================
+INPUT SYSTEM (Clean, Solid, 1px Border)
+========================================================================== */
+
+.input-field, .input-field-auth {
+width: 100%;
+background-color: #FFFFFF;
+border: 1px solid var(--color-border);
+border-radius: var(--radius-md);
+padding: 0.75rem 1rem;
+color: var(--color-text);
+font-family: var(--font-sans);
+font-size: 0.9375rem;
+transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+outline: none;
+}
+
+.input-field:focus, .input-field-auth:focus {
+border-color: var(--color-primary);
+box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.input-field::placeholder, .input-field-auth::placeholder {
+color: var(--color-muted-light);
+}
+
+/* ==========================================================================
+BADGES & CHIPS
+========================================================================== */
+
+.badge {
+display: inline-flex;
+padding: 0.25rem 0.5rem;
+border-radius: 4px;
+font-size: 0.75rem;
+}
+
+.badge-primary, .badge-accent {
+background-color: var(--color-primary-subtle);
+color: var(--color-primary);
+border: 1px solid rgba(36, 59, 255, 0.15);
+}
+
+.badge-purple {
+background-color: var(--color-purple-subtle);
+color: var(--color-purple);
+border: 1px solid rgba(124, 92, 255, 0.15);
+}
+
+.badge-muted {
+background-color: #F2F4F7;
+color: var(--color-muted);
+border: 1px solid var(--color-border);
+}
+
+/* ==========================================================================
+SELECTIVE GRADIENT TEXT (Use Sparingly)
+========================================================================== */
+
+.text-gradient-intelligence {
+background: linear-gradient(135deg, #243BFF 0%, #7C5CFF 100%);
+-webkit-background-clip: text;
+background-clip: text;
+-webkit-text-fill-color: transparent;
+display: inline;
+}
+
+.text-electric-blue {
+color: var(--color-primary) !important;
+}
+
+/* ==========================================================================
+ACCESSIBILITY & REDUCED MOTION
+========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

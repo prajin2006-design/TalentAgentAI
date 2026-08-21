@@ -1,0 +1,118 @@
+.resume-uploader-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.dropzone-area {
+  border-radius: 20px;
+  padding: 3.5rem 2rem;
+  background-color: var(--bg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-align: center;
+}
+
+.dropzone-area:hover, .dropzone-area.dragging {
+  background-color: var(--primary-subtle);
+}
+
+.dropzone-area.analyzing {
+  background-color: var(--primary-subtle);
+  cursor: wait;
+}
+
+.upload-state-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.upload-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 4px 15px var(--primary-glow);
+}
+
+.cloud-icon {
+  color: #FFFFFF;
+}
+
+.state-title {
+  font-size: 1.25rem;
+  color: var(--primary);
+}
+
+.state-sub {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.highlight-link {
+  color: var(--primary);
+  font-weight: 700;
+  font-family: var(--font-heading);
+  text-decoration: underline;
+}
+
+.file-format-badge {
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background-color: #FFFFFF;
+  color: var(--text-secondary);
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.uploaded-file-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background-color: var(--primary-subtle);
+  border-radius: 14px;
+}
+
+.banner-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pdf-icon {
+  color: var(--primary);
+}
+
+.file-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+.file-meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}

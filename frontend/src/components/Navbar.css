@@ -1,0 +1,357 @@
+/* ========================================================================= */
+/* TALENT AGENT AI — LIQUID GLASS NAVBAR                                     */
+/* Clean, minimal, no nested pill. Flat links with individual states.         */
+/* ========================================================================= */
+
+.navbar-floating-container {
+  position: fixed;
+  top: 1rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1000;
+  padding: 0 1rem;
+  pointer-events: none;
+  transition: top 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar-floating-container.scrolled {
+  top: 0.6rem;
+}
+
+/* ── Glass Bar ── */
+.navbar-pill-bar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1100px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 9999px;
+  padding: 0.45rem 1.5rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar-pill-bar.scrolled {
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 6px 32px rgba(0, 0, 0, 0.08);
+  padding: 0.38rem 1.4rem;
+}
+
+/* ── Logo ── */
+.navbar-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logo-brand-title {
+  font-family: var(--font-display, 'Inter', sans-serif);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #111111;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.logo-blue-badge {
+  color: #FFFFFF;
+  background-color: var(--primary, #1E22FF);
+  padding: 0.12rem 0.4rem;
+  border-radius: 5px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  margin-left: 0.15rem;
+}
+
+.logo-live-pulse-dot {
+  width: 6px;
+  height: 6px;
+  background: #10B981;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 6px #10B981;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+/* ── Menu Items (FLAT — no background pill) ── */
+.navbar-menu-items {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  /* NO background, NO border, NO box-shadow — flat links */
+}
+
+/* ── Individual Nav Item ── */
+.nav-pill-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  font-family: var(--font-display, 'Inter', sans-serif);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #555555;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-pill-item:hover {
+  background: rgba(0, 0, 0, 0.045);
+  color: #111111;
+}
+
+.nav-pill-item:active {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.nav-pill-item.active {
+  background: #111111;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.nav-pill-item.active .text-electric-blue {
+  color: #FFFFFF !important;
+}
+
+.highlighted-nav-link {
+  color: var(--primary, #1E22FF);
+  font-weight: 700;
+}
+
+/* ── CTA Actions (right side) ── */
+.navbar-cta-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Accent Link ("Build Resume") */
+.nav-pill-item-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(30, 34, 255, 0.07);
+  color: var(--primary, #1E22FF);
+  border: 1px solid rgba(30, 34, 255, 0.18);
+  border-radius: 9999px;
+  padding: 0.38rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nav-pill-item-accent:hover {
+  background: rgba(30, 34, 255, 0.13);
+  box-shadow: 0 2px 10px rgba(30, 34, 255, 0.15);
+}
+
+/* Sign In Link */
+.nav-login-btn {
+  font-family: var(--font-display, 'Inter', sans-serif);
+  font-weight: 700;
+  font-size: 0.84rem;
+  color: #111111;
+  text-decoration: none;
+  padding: 0.38rem 0.65rem;
+  border-radius: 8px;
+  transition: color 0.15s ease;
+}
+
+.nav-login-btn:hover {
+  color: var(--primary, #1E22FF);
+}
+
+/* Get Started CTA Pill */
+.nav-cta-pill {
+  padding: 0.42rem 1.1rem !important;
+  font-size: 0.82rem !important;
+  border-radius: 9999px !important;
+}
+
+.nav-cta-pill:hover {
+  box-shadow: 0 6px 20px rgba(30, 34, 255, 0.3) !important;
+}
+
+/* ── Authenticated User Area ── */
+.auth-user-nav-flex {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.nav-profile-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.38rem 0.85rem;
+  background-color: #111111;
+  color: #FFFFFF;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nav-profile-pill:hover {
+  background-color: #222222;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.btn-logout-nav {
+  background: transparent;
+  color: #666666;
+  cursor: pointer;
+  padding: 0.38rem;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-logout-nav:hover {
+  background-color: #FEE2E2;
+  color: #DC2626;
+}
+
+/* ── Mobile Hamburger ── */
+.mobile-hamburger-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #111111;
+  padding: 0.38rem;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+/* ── Mobile Drawer ── */
+.mobile-nav-drawer {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 1100px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
+  padding: 1.25rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mobile-nav-links a {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111111;
+  text-decoration: none;
+  padding: 0.55rem 0.85rem;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+.mobile-nav-links a:hover {
+  background: rgba(30, 34, 255, 0.05);
+  color: var(--primary, #1E22FF);
+}
+
+.mobile-drawer-auth-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #EAEAE4;
+}
+
+.mobile-logout-btn {
+  background: transparent;
+  border: 1px solid #FCA5A5;
+  color: #DC2626;
+  padding: 0.6rem;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+
+/* ── Utility Classes ── */
+.text-electric-blue {
+  color: var(--primary, #1E22FF) !important;
+}
+
+.font-display {
+  font-family: var(--font-display, 'Inter', sans-serif);
+}
+
+.hover-expand {
+  transition: transform 0.15s ease;
+}
+.hover-expand:hover {
+  transform: translateY(-1px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .navbar-menu-items {
+    display: none;
+  }
+  .hide-on-mobile {
+    display: none;
+  }
+  .mobile-hamburger-btn {
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .navbar-floating-container,
+  .navbar-pill-bar,
+  .nav-pill-item,
+  .nav-pill-item-accent,
+  .nav-cta-pill,
+  .navbar-logo-group,
+  .nav-login-btn,
+  .nav-profile-pill,
+  .btn-logout-nav,
+  .hover-expand {
+    transition: none !important;
+    animation: none !important;
+  }
+  .logo-live-pulse-dot {
+    animation: none !important;
+  }
+}

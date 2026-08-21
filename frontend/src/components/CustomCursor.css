@@ -1,0 +1,37 @@
+/* ==========================================================================
+   Inverted Negative-Space Ellipse Cursor Lens
+   ========================================================================== */
+
+.custom-cursor-lens {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: clamp(190px, 16vw, 250px);
+  height: clamp(120px, 11vw, 160px);
+  background-color: #FFFFFF;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  transform: translate3d(-1000px, -1000px, 0) translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              width 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.custom-cursor-lens.active {
+  opacity: 0.85;
+}
+
+.custom-cursor-lens.hovering {
+  width: clamp(230px, 19vw, 290px);
+  height: clamp(150px, 13vw, 190px);
+}
+
+@media (max-width: 768px), (pointer: coarse), (hover: none), (prefers-reduced-motion: reduce) {
+  .custom-cursor-lens {
+    display: none !important;
+  }
+}

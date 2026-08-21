@@ -1,0 +1,59 @@
+.ai-recommendation-card {
+  background: var(--primary-subtle);
+  border-radius: 20px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 255, 0.04);
+}
+
+.ai-rec-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.05em;
+}
+
+.bot-icon {
+  color: var(--primary);
+}
+
+.sparkle-accent {
+  color: var(--primary);
+}
+
+.ai-rec-quote {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  line-height: 1.45;
+}
+
+.ai-rec-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  transition: gap var(--transition-fast);
+}
+
+.ai-rec-link:hover {
+  gap: 0.6rem;
+  text-decoration: underline;
+}
