@@ -20,28 +20,35 @@ async function request(endpoint, options = {}) {
   const config = {
     ...options,
     headers,
-    credentials: 'include'
+    credentials: 'include' // Sends HTTP-only cookies
   };
 
   try {
-    const res = await fetch(url, config);
+    const response = await fetch(url, config);
 
+    // If downloading a binary blob (e.g. PDF or DOCX export)
     if (options.responseType === 'blob') {
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        const err = new Error(errorData.error || `Request failed with status ${res.status}`);
-        err.status = res.status;
-        err.data = errorData;
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Download failed');
+        const err = new Error(errorText);
+        err.status = response.status;
         throw err;
       }
-      return res.blob();
+      return response.blob();
     }
 
-    const data = await res.json().catch(() => ({}));
+    // Parse JSON response
+    let data;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      data = await response.text();
+    }
 
-    if (!res.ok) {
-      const err = new Error(data.error || data.message || `Request failed with status ${res.status}`);
-      err.status = res.status;
+    if (!response.ok) {
+      const err = new Error(data?.error || data?.message || `Request failed with status ${response.status}`);
+      err.status = response.status;
       err.data = data;
       throw err;
     }
@@ -63,6 +70,7 @@ export const authAPI = {
   verifyEmail: (payload) => request('/auth/verify-email', { method: 'POST', body: JSON.stringify(payload) }),
   resendOtp: (payload) => request('/auth/resend-otp', { method: 'POST', body: JSON.stringify(payload) }),
   login: (payload) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
+  getGoogleConfig: () => request('/auth/google/config', { method: 'GET' }),
   googleAuth: (payload) => request('/auth/google', { method: 'POST', body: JSON.stringify(payload) }),
   forgotPassword: (payload) => request('/auth/forgot-password', { method: 'POST', body: JSON.stringify(payload) }),
   resetPassword: (payload) => request('/auth/reset-password', { method: 'POST', body: JSON.stringify(payload) }),
@@ -82,6 +90,13 @@ export const authAPI = {
 export const profileAPI = {
   getProfile: () => request('/profile', { method: 'GET' }),
   updateProfile: (payload) => request('/profile', { method: 'PUT', body: JSON.stringify(payload) }),
+  addSkill: (payload) => request('/skills', { method: 'POST', body: JSON.stringify(payload) }),
+  deleteSkill: (id) => request(`/skills/${id}`, { method: 'DELETE' }),
+  addEducation: (payload) => request('/education', { method: 'POST', body: JSON.stringify(payload) }),
+  deleteEducation: (id) => request(`/education/${id}`, { method: 'DELETE' }),
+  addProject: (payload) => request('/projects', { method: 'POST', body: JSON.stringify(payload) }),
+  deleteProject: (id) => request(`/projects/${id}`, { method: 'DELETE' }),
+  addExperience: (payload) => request('/experience', { method: 'POST', body: JSON.stringify(payload) }),
   deleteExperience: (id) => request(`/experience/${id}`, { method: 'DELETE' }),
   uploadResume: (formData) => request('/resume/upload', { method: 'POST', body: formData })
 };
@@ -154,9 +169,15 @@ export const adminAPI = {
   createJob: (payload) => request('/admin/jobs', { method: 'POST', body: JSON.stringify(payload) }),
   updateJob: (id, payload) => request(`/admin/jobs/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
   deleteJob: (id) => request(`/admin/jobs/${id}`, { method: 'DELETE' }),
-  updateJobStatus: (id, status) => request(`/admin/jobs/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  reanalyzeResume: (resumeId) => request(`/admin/resumes/${resumeId}/reanalyze`, { method: 'POST' }),
   getAuditLogs: (params = {}) => {
     const qs = new URLSearchParams(params).toString();
     return request(`/admin/audit-logs${qs ? '?' + qs : ''}`, { method: 'GET' });
   }
 };
+
+export const dashboardAPI = {
+  getSummary: (timeframe = '30d') => request(`/dashboard/summary?timeframe=${encodeURIComponent(timeframe)}`, { method: 'GET' }),
+  getActivity: (timeframe = '30d') => request(`/dashboard/activity?timeframe=${encodeURIComponent(timeframe)}`, { method: 'GET' })
+};
+

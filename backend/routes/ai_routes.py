@@ -145,7 +145,8 @@ def chat_with_assistant():
             'request_id': result.get('request_id')
         }), 200
     except AIServiceError as error:
-        return jsonify({'success': False, 'error': error.public_message}), error.status_code
+        logger.error(f"AIServiceError caught in route: {error.status_code} - {error.public_message} - detail: {error.technical_detail}")
+        return jsonify({'success': False, 'error': error.public_message, 'detail': error.technical_detail}), error.status_code
     except Exception as e:
         logger.exception(f"Unexpected AI chat failure for user_id={user['id']}: {e}")
         return jsonify({'success': False, 'error': 'Talent Agent AI is temporarily unavailable. Please try again.'}), 500

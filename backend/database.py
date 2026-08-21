@@ -511,7 +511,12 @@ def init_db():
 
     try:
         if DB_ENGINE == 'mysql':
-            execute_query("ALTER TABLE applications ADD UNIQUE KEY unique_user_job (user_id, job_id)", commit=True)
+            key_exists = execute_query(
+                "SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'applications' AND CONSTRAINT_NAME = 'unique_user_job'",
+                fetchone=True
+            )
+            if not key_exists:
+                execute_query("ALTER TABLE applications ADD UNIQUE KEY unique_user_job (user_id, job_id)", commit=True)
         else:
             execute_query("CREATE UNIQUE INDEX IF NOT EXISTS idx_uniq_user_job ON applications (user_id, job_id)", commit=True)
     except Exception:

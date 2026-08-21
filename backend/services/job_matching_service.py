@@ -73,14 +73,14 @@ def calculate_job_matches_for_user(user_id: int):
 
     # Clean up stale matches for non-active/paused/archived jobs
     execute_query(
-        "DELETE FROM job_matches WHERE job_id IN (SELECT id FROM jobs WHERE (status != 'ACTIVE' AND status IS NOT NULL) OR is_active = %s)",
+        "DELETE FROM job_matches WHERE job_id IN (SELECT id FROM jobs WHERE (UPPER(status) != 'ACTIVE' AND status IS NOT NULL) OR is_active = %s)",
         (False,),
         commit=True
     )
 
     # 2. Fetch all active jobs ONLY
     jobs = execute_query(
-        "SELECT * FROM jobs WHERE (status = 'ACTIVE' OR status IS NULL) AND is_active = %s",
+        "SELECT * FROM jobs WHERE (UPPER(status) = 'ACTIVE' OR status IS NULL) AND is_active = %s",
         (True,),
         fetchall=True
     )

@@ -29,23 +29,16 @@ ArrowUpRight
 import './Home.css';
 
 export const Home = () => {
-const [activeFeatureTab, setActiveFeatureTab] = useState('ats');
-const [previewTemplate, setPreviewTemplate] = useState('modern');
-const [aiQueryState, setAiQueryState] = useState({
-question: "How do I optimize my resume for a Senior Frontend role?",
-insight: "To target Senior Frontend requisitions, emphasize distributed architecture, state management performance (e.g. React 19 / Zustand), and measurable impact (e.g. 'reduced LCP by 42%'). Use single-column ATS templates with clear standard headers.",
-match: "94% ATS Target Fit",
-nextStep: "Use ATS Resume Maker to generate action-verb bullets.",
-project: "Architected micro-frontend framework with Webpack Module Federation."
-});
-const [aiQueryState, setAiQueryState] = useState({
-question: "How do I optimize my resume for a Senior Frontend role?",
-insight: "To target Senior Frontend requisitions, emphasize distributed architecture, state management performance (e.g. React 19 / Zustand), and measurable impact (e.g. 'reduced LCP by 42%'). Use single-column ATS templates with clear standard headers.",
-match: "94% ATS Target Fit",
-nextStep: "Use ATS Resume Maker to generate action-verb bullets.",
-project: "Architected micro-frontend framework with Webpack Module Federation."
-});
-const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const [activeFeatureTab, setActiveFeatureTab] = useState('ats');
+  const [previewTemplate, setPreviewTemplate] = useState('modern');
+  const [aiQueryState, setAiQueryState] = useState({
+    question: "How do I optimize my resume for a Senior Frontend role?",
+    insight: "To target Senior Frontend requisitions, emphasize distributed architecture, state management performance (e.g. React 19 / Zustand), and measurable impact (e.g. 'reduced LCP by 42%'). Use single-column ATS templates with clear standard headers.",
+    match: "94% ATS Target Fit",
+    nextStep: "Use ATS Resume Maker to generate action-verb bullets.",
+    project: "Architected micro-frontend framework with Webpack Module Federation."
+  });
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
 
 // Scroll reveal hooks
 const [statsRef, isStatsVisible] = useScrollReveal({ threshold: 0.1 });
@@ -403,7 +396,7 @@ Dynamic roadmap forecasting milestones, compensation growth, and staff-level eng
 {/* ========================================================================= */}
 {/* 5. CONVERSATIONAL AI CAREER CO-PILOT */}
 {/* ========================================================================= */}
-<section id="about" ref={aiAssistantRef} className={`ai-copilot-section container ${isAiAssistantVisible ? 'revealed' : ''}`}>
+<section id="co-pilot" ref={aiAssistantRef} className={`ai-copilot-section container ${isAiAssistantVisible ? 'revealed' : ''}`}>
 <div className="section-title-stack text-center">
 <div className="section-pill-tag">
 <MessageSquareCode size={13} className="text-electric-blue" />
@@ -415,73 +408,79 @@ Real-time strategic advice tailored to your technical profile, compensation goal
 </p>
 </div>
 
-<div className="ai-agent-interactive-container">
-<div className="prompts-chips-grid">
-{suggestedQuestions.map((item, idx) => (
+        <div className="ai-agent-interactive-container">
+          <div className="prompts-chips-grid">
+            {suggestedQuestions.map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className={`prompt-chip-btn ${aiQueryState.question === item.question ? 'active' : ''}`}
+                onClick={() => handleSelectQuestion(item)}
+              >
+                <Sparkles size={14} className="text-electric-blue" />
+                <span>{item.question}</span>
+              </button>
+            ))}
+          </div>
 
+          <div className="ai-chat-demo-card card">
+            <div className="demo-chat-bubble user">
+              <div className="chat-avatar user">You</div>
+              <div className="chat-message">{aiQueryState.question}</div>
+            </div>
 
+            <div className="demo-chat-bubble assistant">
+              <div className="chat-avatar ai">
+                <Sparkles size={16} />
+              </div>
+              <div className="chat-message">
+                {isAiProcessing ? (
+                  <div className="typing-indicator">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                ) : (
+                  <>
+                    <p className="ai-insight-text">{aiQueryState.insight}</p>
+                    <div className="ai-insight-badges">
+                      <span className="badge-match">{aiQueryState.match}</span>
+                      <span className="badge-next-step">
+                        <ArrowRight size={13} /> {aiQueryState.nextStep}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</Link>
-</div>
-</div>
-</div>
-</section>
+      {/* ========================================================================= */}
+      {/* 6. CALL TO ACTION BANNER */}
+      {/* ========================================================================= */}
+      <section ref={ctaRef} className={`final-cta-section container ${isCtaVisible ? 'revealed' : ''}`}>
+        <div className="cta-box-editorial">
+          <div className="section-pill-tag">
+            <Sparkles size={13} className="text-electric-blue" />
+            <span>ACCELERATE YOUR CAREER</span>
+          </div>
+          <h2 className="cta-headline">Ready to Supercharge Your Engineering Career?</h2>
+          <p className="cta-subtext">
+            Join thousands of developers using Talent Agent AI to build ATS-optimized resumes, diagnose skill gaps, and land top-tier technical roles.
+          </p>
+          <div className="demo-action-row" style={{ gap: '1rem', marginTop: '1rem' }}>
+            <Link to="/signup" className="btn btn-primary btn-lg">
+              <span>Get Started Free</span>
+              <ArrowRight size={16} />
+            </Link>
+            <Link to="/login" className="btn btn-secondary btn-lg">
+              <span>Sign In</span>
+            </Link>
+          </div>
+        </div>
+      </section>
 
 {/* ========================================================================= */}
 {/* 7. COMPREHENSIVE MULTI-COLUMN FOOTER */}
@@ -519,27 +518,32 @@ Autonomous career intelligence, ATS resume optimization, and job compatibility m
 <Link to="/signup">Register Account</Link>
 </div>
 
-<div className="footer-links-col">
-<h5>Administration</h5>
-<Link to="/admin/login">Admin Gateway</Link>
-<Link to="/login">Candidate Sign In</Link>
-<Link to="/signup">Register Account</Link>
-</div>
+        <div className="footer-links-col">
+          <h5>Platform</h5>
+          <Link to="/about">About Us</Link>
+          <Link to="/privacy">Privacy Policy</Link>
+          <Link to="/terms">Terms of Service</Link>
+        </div>
 
-<div className="footer-links-col">
-<h5>Administration</h5>
-<Link to="/admin/login">Admin Gateway</Link>
-<Link to="/admin">Recruiter Dashboard</Link>
-<Link to="/settings">System Preferences</Link>
-</div>
-</div>
+        <div className="footer-links-col">
+          <h5>Administration</h5>
+          <Link to="/admin/login">Admin Gateway</Link>
+          <Link to="/admin">Recruiter Dashboard</Link>
+          <Link to="/settings">System Preferences</Link>
+        </div>
+      </div>
 
-<div className="container footer-bottom-row">
-<span>© 2026 Talent Agent AI. All rights reserved.</span>
-<div className="footer-legal-links">
-<span>Privacy Policy</span>
-<span>Terms of Service</span>
-<span>Security & Compliance</span>
-</div>
-</div>
-</footer>
+      <div className="container footer-bottom-row">
+        <span>© 2026 Talent Agent AI. All rights reserved.</span>
+        <div className="footer-legal-links">
+          <span>Privacy Policy</span>
+          <span>Terms of Service</span>
+          <span>Security & Compliance</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+  );
+};
+
+export default Home;

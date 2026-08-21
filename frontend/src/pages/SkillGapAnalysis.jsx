@@ -1,203 +1,294 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCareer } from '../context/CareerContext';
-import { Target, CheckCircle2, Clock, TrendingUp, Sparkles, BookOpen, X, ChevronRight, Zap } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { jobsAPI } from '../services/api';
+import {
+  Target,
+  CheckCircle2,
+  AlertCircle,
+  TrendingUp,
+  Sparkles,
+  BookOpen,
+  X,
+  ChevronRight,
+  Zap,
+  Briefcase,
+  Clock,
+  Layers,
+  ArrowRight
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './SkillGapAnalysis.css';
 
 export const SkillGapAnalysis = () => {
-  const { profile, skillGaps } = useCareer();
-  const targetRole = profile.preferences.targetRole;
-  const [selectedSkillGap, setSelectedSkillGap] = useState(null);
+  const { isAuthenticated } = useAuth();
+  const { profile, skills, skillGaps: careerSkillGaps, profileScore } = useCareer();
 
-  const comparisonSkills = [
-    { name: 'React.js', userHas: true, required: true },
-    { name: 'JavaScript (ES6+)', userHas: true, required: true },
-    { name: 'HTML5 & CSS3', userHas: true, required: true },
-    { name: 'Git / GitHub', userHas: true, required: true },
-    { name: 'Figma to Code Translation', userHas: true, required: true },
-    { name: 'TypeScript', userHas: false, required: true, priority: 'HIGH' },
-    { name: 'React Testing Library', userHas: false, required: true, priority: 'MEDIUM' },
-    { name: 'Next.js App Router', userHas: false, required: true, priority: 'MEDIUM' },
-    { name: 'REST API Optimization', userHas: false, required: true, priority: 'LOW' }
-  ];
+  const [activeJobs, setActiveJobs] = useState([]);
+  const [computedGaps, setComputedGaps] = useState([]);
+  const [selectedSkillGap, setSelectedSkillGap] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const targetRole = profile?.preferred_role || 'Software Engineering Positions';
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchMatrix = async () => {
+      setIsLoading(true);
+      try {
+        const jData = await jobsAPI.getJobs();
+        if (mounted && jData && jData.jobs) {
+          setActiveJobs(jData.jobs);
+
+          // Build dynamic skill comparison from active jobs
+          const candidateSkillsLower = new Set(
+            (skills || []).map((s) => String(s?.skill_name || s || '').toLowerCase().trim())
+          );
+
+          const requiredSkillCounts = {};
+          jData.jobs.forEach((job) => {
+            const req = Array.isArray(job.requiredSkills) ? job.requiredSkills : [];
+            req.forEach((sk) => {
+              if (typeof sk === 'string' && sk.trim()) {
+                const normalized = sk.trim();
+                requiredSkillCounts[normalized] = (requiredSkillCounts[normalized] || 0) + 1;
+              }
+            });
+          });
+
+          // Identify gaps and present skills
+          const gapsList = Object.entries(requiredSkillCounts).map(([skillName, jobCount]) => {
+            const userHas = candidateSkillsLower.has(skillName.toLowerCase());
+            const priority = jobCount >= 3 ? 'HIGH' : jobCount >= 2 ? 'MEDIUM' : 'LOW';
+            const impactPct = priority === 'HIGH' ? 12 : priority === 'MEDIUM' ? 8 : 4;
+            const estimatedHours = priority === 'HIGH' ? 24 : 12;
+
+            return {
+              id: `gap-${skillName}`,
+              skill_name: skillName,
+              userHas,
+              required: true,
+              priority,
+              impact_pct: impactPct,
+              estimated_hours: estimatedHours,
+              target_level: priority === 'HIGH' ? 'Advanced' : 'Intermediate',
+              jobs_affected: jobCount,
+              why_needed: `Required by ${jobCount} active market requisition(s) targeting ${targetRole}.`,
+              learning_path: [
+                `Core fundamentals & architecture in ${skillName}`,
+                `Build a production project module demonstrating ${skillName}`,
+                `Benchmark ATS resume integration with quantifiable impact bullets`
+              ]
+            };
+          });
+
+          // Sort: Missing skills first, then by priority/jobs affected
+          gapsList.sort((a, b) => {
+            if (a.userHas === b.userHas) {
+              return b.jobs_affected - a.jobs_affected;
+            }
+            return a.userHas ? 1 : -1;
+          });
+
+          setComputedGaps(gapsList);
+        }
+      } catch (err) {
+        console.error('Failed to calculate skill gap matrix:', err);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchMatrix();
+    }
+  }, [isAuthenticated, skills, targetRole]);
+
+  const missingGaps = computedGaps.filter((g) => !g.userHas);
+  const presentSkills = computedGaps.filter((g) => g.userHas);
 
   return (
     <div className="skill-gaps-wrapper">
-      {/* Overview Banner */}
+      {/* 1. OVERVIEW BANNER */}
       <div className="card gap-banner-card">
         <div className="banner-left-info">
-          <div className="badge badge-accent">
-            <Target size={14} /> Gap Intelligence Matrix
+          <div className="badge-gap-header">
+            <Target size={14} /> <span>Skill Gap Diagnostics Matrix</span>
           </div>
-          <h2 className="banner-heading">Target Role Skill Gap Breakdown</h2>
+          <h2 className="banner-heading">Technical Calibration for {targetRole}</h2>
           <p className="banner-sub">
-            Targeting <span className="text-electric-blue font-bold">{targetRole}</span>. Closing 2 high-impact skill gaps will elevate your profile match score from 82% to 95%.
+            Benchmarked against <strong>{activeJobs.length} active database requisitions</strong>. Closing your top missing proficiencies directly elevates your candidate compatibility index.
           </p>
         </div>
 
-        <div className="gap-summary-metric">
-          <span className="metric-score-val">{skillGaps.length}</span>
-          <span className="metric-score-label">IDENTIFIED GAPS</span>
+        <div className="gap-metrics-strip">
+          <div className="metric-box">
+            <span className="metric-score-val">{missingGaps.length}</span>
+            <span className="metric-score-label">IDENTIFIED GAPS</span>
+          </div>
+          <div className="metric-divider" />
+          <div className="metric-box">
+            <span className="metric-score-val text-green">{presentSkills.length}</span>
+            <span className="metric-score-label">VERIFIED SKILLS</span>
+          </div>
         </div>
       </div>
 
-      {/* Comparison Matrix Table */}
+      {/* 2. GAP COMPARISON MATRIX TABLE */}
       <div className="card comparison-card">
         <div className="comparison-header">
-          <Sparkles size={18} className="text-electric-blue" />
-          <h3>YOUR SKILLS vs REQUIRED SKILLS ({targetRole})</h3>
+          <div className="comp-title-wrap">
+            <Sparkles size={18} className="text-primary" />
+            <h3>Market Skills Alignment ({computedGaps.length} Evaluated)</h3>
+          </div>
+          <Link to="/profile" className="btn-edit-profile-link">
+            <span>Manage Profile Skills</span>
+            <ChevronRight size={14} />
+          </Link>
         </div>
 
         <div className="comparison-table-wrapper">
-          <table className="comparison-table">
-            <thead>
-              <tr>
-                <th>Skill / Technology</th>
-                <th>Your Profile</th>
-                <th>Required for Role</th>
-                <th>Priority Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {comparisonSkills.map((item) => {
-                const gapMatch = skillGaps.find((g) => g.skill.toLowerCase().includes(item.name.toLowerCase().split(' ')[0]));
-                return (
-                  <tr key={item.name} className={!item.userHas ? 'gap-row' : ''}>
-                    <td className="skill-name-td">{item.name}</td>
-                    <td>
-                      {item.userHas ? (
-                        <span className="badge badge-accent"><CheckCircle2 size={12} /> Present</span>
-                      ) : (
-                        <span className="badge badge-muted">Missing</span>
-                      )}
-                    </td>
-                    <td>
-                      <span className="badge badge-primary"><CheckCircle2 size={12} /> Required</span>
-                    </td>
-                    <td>
-                      {item.userHas ? (
-                        <span className="text-muted font-heading">Match Verified ✓</span>
-                      ) : (
-                        <span className={`priority-tag ${item.priority?.toLowerCase()}`}>
-                          {item.priority} PRIORITY
+          {isLoading ? (
+            <div className="table-loading-box">
+              <div className="skeleton-row-line" />
+              <div className="skeleton-row-line" />
+              <div className="skeleton-row-line" />
+            </div>
+          ) : (
+            <table className="comparison-table">
+              <thead>
+                <tr>
+                  <th>Skill / Technology</th>
+                  <th>Your Profile</th>
+                  <th>Market Demand</th>
+                  <th>Priority Impact</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {computedGaps.length > 0 ? (
+                  computedGaps.map((item) => (
+                    <tr key={item.id || item.skill_name} className={!item.userHas ? 'gap-row' : ''}>
+                      <td className="skill-name-td">
+                        <strong>{item.skill_name}</strong>
+                      </td>
+                      <td>
+                        {item.userHas ? (
+                          <span className="status-pill match">
+                            <CheckCircle2 size={12} /> Present
+                          </span>
+                        ) : (
+                          <span className="status-pill gap">
+                            <AlertCircle size={12} /> Missing
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <span className="demand-text">
+                          Required by <strong>{item.jobs_affected}</strong> role(s)
                         </span>
-                      )}
-                    </td>
-                    <td>
-                      {!item.userHas && gapMatch && (
-                        <button
-                          onClick={() => setSelectedSkillGap(gapMatch)}
-                          className="btn btn-primary-outline btn-xs"
-                        >
-                          Inspect Path <ChevronRight size={13} />
-                        </button>
-                      )}
+                      </td>
+                      <td>
+                        {item.userHas ? (
+                          <span className="verified-text">Match Verified ✓</span>
+                        ) : (
+                          <span className={`priority-tag ${item.priority.toLowerCase()}`}>
+                            {item.priority} PRIORITY (+{item.impact_pct}%)
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        {!item.userHas ? (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSkillGap(item)}
+                            className="btn-inspect-path"
+                          >
+                            <span>Inspect Path</span>
+                            <ChevronRight size={13} />
+                          </button>
+                        ) : (
+                          <span className="text-muted text-xs">Profile Aligned</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="empty-table-row">
+                      No active jobs or skill requirements found in database.
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
-      {/* Priority Action Cards Grid */}
-      <div className="gaps-roadmap-section">
-        <div className="section-title-row">
-          <TrendingUp size={20} className="text-electric-blue" />
-          <h3 className="section-heading">Priority Skill Learning Roadmap</h3>
-        </div>
-
-        <div className="gaps-priority-grid">
-          {skillGaps.map((gap) => (
-            <div
-              key={gap.id}
-              onClick={() => setSelectedSkillGap(gap)}
-              className="card priority-card hover-expand card-interactive"
-            >
-              <div className="priority-card-header">
-                <span className="badge badge-accent">
-                  {gap.priority}
-                </span>
-                <span className="impact-badge">{gap.impact}</span>
-              </div>
-
-              <h3 className="gap-skill-title">{gap.skill}</h3>
-              <p className="gap-description">{gap.description}</p>
-
-              <div className="hours-row">
-                <Clock size={14} className="text-electric-blue" />
-                <span>Estimated Effort: ~{gap.estimatedHours} Hours</span>
-              </div>
-
-              <div className="inspect-link-row">
-                <span>Click to view detailed learning path</span>
-                <ChevronRight size={14} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* SKILL DETAIL INSPECTION MODAL */}
+      {/* 3. LEARNING PATH / DIAGNOSTIC MODAL */}
       {selectedSkillGap && (
-        <div className="admin-modal-overlay">
-          <div className="card admin-modal-card">
-            <div className="modal-header">
-              <div>
-                <span className="badge badge-accent mb-1">{selectedSkillGap.priority}</span>
-                <h2>{selectedSkillGap.skill}</h2>
-                <p className="text-muted text-sm">{selectedSkillGap.impact}</p>
+        <div className="modal-backdrop-overlay" onClick={() => setSelectedSkillGap(null)}>
+          <div className="modal-content-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-row">
+              <div className="modal-title-stack">
+                <span className={`priority-tag ${selectedSkillGap.priority.toLowerCase()}`}>
+                  {selectedSkillGap.priority} PRIORITY
+                </span>
+                <h3 className="modal-skill-title">{selectedSkillGap.skill_name}</h3>
               </div>
-              <button onClick={() => setSelectedSkillGap(null)} className="icon-action-btn">
-                <X size={20} />
+              <button
+                type="button"
+                onClick={() => setSelectedSkillGap(null)}
+                className="btn-close-modal"
+              >
+                <X size={18} />
               </button>
             </div>
 
-            <div className="modal-body-content">
-              <div className="modal-info-stack">
-                <div className="detail-block">
-                  <span className="block-label">WHY YOU NEED IT</span>
-                  <p className="block-text">{selectedSkillGap.whyNeeded || selectedSkillGap.description}</p>
+            <div className="modal-body-stack">
+              <div className="modal-meta-grid">
+                <div className="modal-meta-card">
+                  <span className="meta-card-label">Target Level</span>
+                  <strong className="meta-card-val">{selectedSkillGap.target_level}</strong>
                 </div>
-
-                <div className="struct-levels-grid">
-                  <div className="level-item">
-                    <span className="level-lbl">CURRENT LEVEL</span>
-                    <span className="level-val">{selectedSkillGap.currentLevel || 'Beginner'}</span>
-                  </div>
-                  <div className="level-item">
-                    <span className="level-lbl">REQUIRED TARGET LEVEL</span>
-                    <span className="level-val blue">{selectedSkillGap.targetLevel || 'Intermediate'}</span>
-                  </div>
+                <div className="modal-meta-card">
+                  <span className="meta-card-label">Est. Time</span>
+                  <strong className="meta-card-val">~{selectedSkillGap.estimated_hours} Hours</strong>
                 </div>
-
-                <div className="detail-block mt-3">
-                  <span className="block-label">RECOMMENDED LEARNING PATH</span>
-                  <div className="action-steps-list">
-                    {selectedSkillGap.learningPath ? (
-                      selectedSkillGap.learningPath.map((step, i) => (
-                        <div key={i} className="action-step-item">
-                          <CheckCircle2 size={15} className="step-icon text-electric-blue" />
-                          <span>{step}</span>
-                        </div>
-                      ))
-                    ) : (
-                      selectedSkillGap.recommendations.map((step, i) => (
-                        <div key={i} className="action-step-item">
-                          <CheckCircle2 size={15} className="step-icon text-electric-blue" />
-                          <span>{step}</span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <div className="detail-block mt-3">
-                  <span className="block-label">ESTIMATED EFFORT</span>
-                  <p className="block-text font-bold text-electric-blue">~{selectedSkillGap.estimatedHours} Hours of targeted learning</p>
+                <div className="modal-meta-card">
+                  <span className="meta-card-label">Match Potential</span>
+                  <strong className="meta-card-val text-green">+{selectedSkillGap.impact_pct}% Match</strong>
                 </div>
               </div>
+
+              <div className="why-needed-box">
+                <h4>Market Rationale</h4>
+                <p>{selectedSkillGap.why_needed}</p>
+              </div>
+
+              <div className="learning-path-section">
+                <h4>Recommended Milestones</h4>
+                <div className="milestones-steps-list">
+                  {selectedSkillGap.learning_path?.map((step, idx) => (
+                    <div key={idx} className="milestone-item">
+                      <span className="milestone-num">{idx + 1}</span>
+                      <span className="milestone-text">{step}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer-row">
+              <Link
+                to="/assistant"
+                className="btn btn-primary"
+                onClick={() => setSelectedSkillGap(null)}
+              >
+                <Sparkles size={15} />
+                <span>Ask AI Assistant for Study Plan</span>
+              </Link>
             </div>
           </div>
         </div>
@@ -205,3 +296,5 @@ export const SkillGapAnalysis = () => {
     </div>
   );
 };
+
+export default SkillGapAnalysis;

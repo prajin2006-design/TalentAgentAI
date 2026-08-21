@@ -82,6 +82,8 @@ def _generate_ai_reply(messages: list) -> tuple[str, object, str]:
                     max_tokens=1500
                 )
                 reply = (response.choices[0].message.content or '').strip()
+                import re
+                reply = re.sub(r'<think>.*?</think>', '', reply, flags=re.DOTALL).strip()
                 if not reply:
                     raise AIServiceError(503, 'The AI service returned an empty response. Please try again.')
                 return reply, response, 'groq'

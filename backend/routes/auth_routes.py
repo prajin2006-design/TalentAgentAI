@@ -380,6 +380,62 @@ def get_google_config():
         'client_id': client_id
     }), 200
 
+@auth_bp.route('/admin/login', methods=['POST'])
+@auth_bp.route('/admin-login', methods=['POST'])
+def admin_login():
+    """Administrator Login Endpoint."""
+    data = request.get_json() or {}
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+
+    if not email or not password:
+        return jsonify({'error': 'Email and password are required.'}), 400
+
+    user = execute_query("SELECT * FROM users WHERE email = %s", (email,), fetchone=True)
+    if not user or not user.get('is_active') or user.get('role') != 'admin':
+        return jsonify({'error': 'Invalid administrator credentials.'}), 401
+
+    if not verify_password(password, user['password_hash']):
+        return jsonify({'error': 'Invalid administrator credentials.'}), 401
+
+    # Record login
+    execute_query("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = %s", (user['id'],), commit=True)
+
+    token = generate_jwt_token({
+        'user_id': user['id'],
+        'email': user['email'],
+        'role': 'admin',
+        'full_name': user['full_name']
+    })
+
+    log_audit_event(user['id'], 'admin', 'admin_login_success', 'user', user['id'], f"Admin logged in: {email}", request.remote_addr)
+
+    user_data = {
+        'id': user['id'],
+        'full_name': user['full_name'],
+        'email': user['email'],
+        'role': 'admin',
+        'email_verified': True
+    }
+
+    resp = make_response(jsonify({
+        'success': True,
+        'message': 'Admin login successful!',
+        'user': user_data,
+        'token': token,
+        'redirect': '/admin'
+    }))
+
+    resp.set_cookie(
+        'jwt_token',
+        token,
+        httponly=True,
+        secure=Config.COOKIE_SECURE,
+        samesite='Lax',
+        max_age=60 * 60 * 24 * 7
+    )
+    return resp, 200
+
 @auth_bp.route('/google', methods=['POST'])
 def google_auth():
     """

@@ -17,6 +17,7 @@ from routes.ai_routes import ai_bp
 from routes.job_routes import job_bp
 from routes.admin_routes import admin_bp
 from routes.resume_routes import resume_bp
+from routes.dashboard_routes import dashboard_bp
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
 logger = logging.getLogger('talent_agent_api')
@@ -41,6 +42,7 @@ def create_app():
     app.register_blueprint(job_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(resume_bp)
+    app.register_blueprint(dashboard_bp)
 
     @app.route('/api/health', methods=['GET'])
     def health_check():

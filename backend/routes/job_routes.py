@@ -17,7 +17,7 @@ def safe_json(val):
 def get_jobs():
     """Returns active job requisitions."""
     jobs = execute_query(
-        "SELECT * FROM jobs WHERE (status = 'ACTIVE' OR status IS NULL) AND is_active = %s ORDER BY id DESC",
+        "SELECT * FROM jobs WHERE (UPPER(status) = 'ACTIVE' OR status IS NULL) AND is_active = %s ORDER BY id DESC",
         (True,),
         fetchall=True
     ) or []
@@ -44,7 +44,7 @@ def get_jobs():
 def get_job_detail(job_id):
     """Returns single active job details."""
     job = execute_query(
-        "SELECT * FROM jobs WHERE id = %s AND (status = 'ACTIVE' OR status IS NULL) AND is_active = %s",
+        "SELECT * FROM jobs WHERE id = %s AND (UPPER(status) = 'ACTIVE' OR status IS NULL) AND is_active = %s",
         (job_id, True),
         fetchone=True
     )
@@ -93,7 +93,7 @@ def get_user_job_matches():
             (SELECT status FROM applications a WHERE a.user_id = jm.user_id AND a.job_id = jm.job_id LIMIT 1) as application_status
         FROM job_matches jm
         JOIN jobs j ON jm.job_id = j.id
-        WHERE jm.user_id = %s AND (j.status = 'ACTIVE' OR j.status IS NULL) AND j.is_active = %s
+        WHERE jm.user_id = %s AND (UPPER(j.status) = 'ACTIVE' OR j.status IS NULL) AND j.is_active = %s
         ORDER BY jm.match_percentage DESC
         """,
         (user['id'], True),

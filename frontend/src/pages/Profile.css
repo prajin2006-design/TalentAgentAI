@@ -1,196 +1,381 @@
-.profile-view-wrapper {
+/* ==========================================================================
+   Talent Agent AI — Profile Page Styling
+   Clean SaaS layout with candidate header hero, 2-column cards & modal forms
+   ========================================================================== */
+
+.profile-page-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
+  padding: 1.75rem 2rem 3.5rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.profile-header-card {
+/* 1. Header Hero Card */
+.profile-header-hero {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2.25rem;
+  padding: 2rem 2.25rem;
   background-color: #FFFFFF;
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--border-color, #E2E8F0);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  flex-wrap: wrap;
+  gap: 1.5rem;
 }
 
-.header-left-info {
+.hero-avatar-identity {
   display: flex;
   align-items: center;
-  gap: 1.75rem;
+  gap: 1.5rem;
 }
 
-.profile-big-avatar {
-  width: 80px;
-  height: 80px;
+.profile-large-avatar {
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background: var(--primary);
-  border: 3px solid var(--accent);
-  color: var(--secondary);
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 2rem;
+  background: var(--primary, #243BFF);
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px var(--accent-glow);
+  font-size: 1.75rem;
+  font-weight: 800;
   flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(36, 59, 255, 0.2);
+  overflow: hidden;
 }
 
-.profile-name {
-  font-size: 2.2rem;
-  color: var(--text-dark);
+.avatar-img-full {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.profile-title {
-  font-size: 1rem;
-  color: var(--primary);
+.avatar-initials-large {
+  letter-spacing: -0.02em;
+}
+
+.identity-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.identity-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.candidate-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.readiness-score-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #DCFCE7;
+  color: #16A34A;
+  font-size: 0.75rem;
   font-weight: 700;
-  font-family: var(--font-heading);
-  margin-bottom: 0.35rem;
+  padding: 3px 9px;
+  border-radius: 999px;
 }
 
-.profile-bio {
+.candidate-headline {
   font-size: 0.95rem;
-  color: var(--text-secondary);
-  max-width: 600px;
+  color: #475569;
+  font-weight: 500;
+  margin: 0;
 }
 
-.profile-grid {
+.candidate-contact-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.contact-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: #64748B;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.profile-save-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: #DCFCE7;
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  color: #16A34A;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* 2. Main Content Grid */
+.profile-content-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
-.profile-col {
+.profile-col-left, .profile-col-right {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.section-card {
-  padding: 1.75rem;
+.profile-section-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-color, #E2E8F0);
+  border-radius: 14px;
+  padding: 1.5rem 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  background-color: #FFFFFF;
+  gap: 1.15rem;
 }
 
-.section-title-row {
+.section-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.section-title-wrap {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--primary);
 }
 
-.info-list {
+.section-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.btn-add-item-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #243BFF;
+  background: #EEF2FF;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-add-item-sm:hover {
+  background: #E0E7FF;
+}
+
+.profile-bio-text {
+  font-size: 0.875rem;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Key Value Meta List */
+.meta-keyvalue-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
-.info-item {
+.keyvalue-row {
   display: flex;
   justify-content: space-between;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid #F8FAFC;
 }
 
-.info-label {
-  color: var(--text-muted);
+.key-label {
+  color: #64748B;
+  font-weight: 500;
 }
 
-.info-val {
-  font-weight: 700;
-  font-family: var(--font-heading);
-  color: var(--text-dark);
-}
-
-.edu-degree {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 1.15rem;
-  color: var(--primary);
-}
-
-.edu-college {
-  font-size: 0.95rem;
-  color: var(--text-dark);
+.val-text {
+  color: #0F172A;
   font-weight: 600;
 }
 
-.edu-meta {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.add-skill-row {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.skills-tags-flex {
+/* Skills Badge Wrap */
+.skills-badge-wrap {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.exp-list, .proj-list {
+.skill-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #0F172A;
+  font-weight: 600;
+}
+
+.skill-pct-str {
+  font-size: 0.7rem;
+  color: #243BFF;
+  background: #EEF2FF;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.skill-remove-x {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.skill-remove-x:hover {
+  color: #DC2626;
+}
+
+/* Items List Container (Education, Experience, Projects) */
+.items-list-container {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.85rem;
 }
 
-.exp-item, .proj-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px dashed var(--border-color);
-}
-
-.exp-item:last-child, .proj-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.exp-header, .proj-header {
+.list-entry-item {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  padding: 0.85rem 1rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  gap: 1rem;
 }
 
-.exp-title, .proj-name {
-  font-size: 1.1rem;
-  color: var(--primary);
+.entry-main-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
 }
 
-.exp-company {
-  font-size: 0.85rem;
-  color: var(--text-dark);
+.entry-title {
+  font-size: 0.92rem;
   font-weight: 700;
+  color: #0F172A;
+  margin: 0;
 }
 
-.exp-duration {
+.entry-subtitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #243BFF;
+}
+
+.entry-field-tag {
+  font-size: 0.75rem;
+  color: #64748B;
+}
+
+.entry-meta-date {
+  font-size: 0.72rem;
+  color: #94A3B8;
+}
+
+.entry-body-desc {
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: #475569;
+  line-height: 1.45;
+  margin: 0.35rem 0 0 0;
 }
 
-.exp-desc, .proj-desc {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
+.proj-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-@media (max-width: 992px) {
-  .profile-grid {
+.proj-ext-link {
+  color: #243BFF;
+  display: flex;
+  align-items: center;
+}
+
+.btn-delete-entry {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-delete-entry:hover {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+/* Subform Box for Add Items */
+.add-subform-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  border-radius: 10px;
+}
+
+.subform-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.empty-section-hint {
+  font-size: 0.82rem;
+  color: #94A3B8;
+  margin: 0;
+  font-style: italic;
+}
+
+@media (max-width: 960px) {
+  .profile-content-grid {
     grid-template-columns: 1fr;
-  }
-  .profile-header-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5rem;
   }
 }

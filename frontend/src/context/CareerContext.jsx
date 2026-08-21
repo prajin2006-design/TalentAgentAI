@@ -178,12 +178,26 @@ export const CareerProvider = ({ children }) => {
 
   const toggleSaveJob = async (jobId) => {
     try {
-      await jobsAPI.toggleSaveJob(jobId);
+      const res = await jobsAPI.toggleSaveJob(jobId);
       setJobMatches((prev) =>
-        prev.map((j) => (j.id === jobId ? { ...j, saved: !j.saved } : j))
+        prev.map((j) => (j.id === jobId || j.jobId === jobId ? { ...j, saved: res.saved } : j))
       );
+      return res;
     } catch (e) {
-      console.error(e);
+      console.error('Failed to toggle save job:', e);
+    }
+  };
+
+  const applyToJob = async (jobId) => {
+    try {
+      const res = await jobsAPI.applyToJob(jobId);
+      setJobMatches((prev) =>
+        prev.map((j) => (j.id === jobId || j.jobId === jobId ? { ...j, applied: true, applicationStatus: 'Submitted', application_status: 'Submitted' } : j))
+      );
+      return res;
+    } catch (err) {
+      console.error('Failed to apply to job:', err);
+      throw err;
     }
   };
 
