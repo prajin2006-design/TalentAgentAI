@@ -25,11 +25,18 @@ dist-ssr
 
 # Environment Variables & Secret Files
 .env
+*.env
 .env.*
+!*.env.example
 !.env.example
 backend/.env
 backend/.env.*
 !backend/.env.example
+
+# Virtual Environment & Packages
+venv/
+.venv/
+node_modules/
 
 # Storage & Databases
 backend/uploads/*

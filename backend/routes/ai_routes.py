@@ -4,7 +4,13 @@ from flask import Blueprint, request, jsonify
 from config import Config
 from database import execute_query
 from routes.auth_routes import get_current_user_from_request
-from services.ai_service import AIServiceError, analyze_candidate_profile, ask_ai_career_assistant
+from services.ai_service import (
+    AIServiceError,
+    analyze_candidate_profile,
+    ask_ai_career_assistant,
+    generate_interview_prep,
+    evaluate_interview_answer
+)
 
 run_ai_profile_analysis = analyze_candidate_profile
 
@@ -122,34 +128,50 @@ def get_analysis():
 
     return jsonify({'has_analysis': True, 'analysis': analysis_data}), 200
 
+from services.groq_service import (
+    process_career_assistant_chat,
+    GroqServiceError
+)
+
 @ai_bp.route('/chat', methods=['POST'])
 def chat_with_assistant():
-    """Run a persisted, profile-aware Gemini/OpenAI conversation for the candidate."""
+    """Run a persisted, profile-aware Groq AI conversation for the candidate."""
     user, err = require_candidate()
     if err: return err
 
     data = request.get_json() or {}
     message = data.get('message', data.get('query', '')).strip()
     conversation_id = data.get('conversation_id')
+    conversation = data.get('conversation')
     request_id = data.get('request_id')
 
     if not message:
         return jsonify({'success': False, 'error': 'Message text is required.'}), 400
 
     try:
-        result = ask_ai_career_assistant(user['id'], message, conversation_id, request_id)
+        # Use Groq service with DB candidate context & persistence
+        result = process_career_assistant_chat(
+            user_id=user['id'],
+            user_message=message,
+            conversation_id=conversation_id,
+            client_conversation=conversation
+        )
         return jsonify({
             'success': True,
-            'message': result['reply'],
+            'response': result['response'],
+            'message': result['message'],
             'conversation_id': result['conversation_id'],
-            'request_id': result.get('request_id')
+            'request_id': request_id
         }), 200
+    except GroqServiceError as groq_err:
+        logger.error(f"GroqServiceError: {groq_err.status_code} - {groq_err.public_message}")
+        return jsonify({'error': groq_err.public_message, 'success': False}), groq_err.status_code
     except AIServiceError as error:
-        logger.error(f"AIServiceError caught in route: {error.status_code} - {error.public_message} - detail: {error.technical_detail}")
-        return jsonify({'success': False, 'error': error.public_message, 'detail': error.technical_detail}), error.status_code
+        logger.error(f"AIServiceError caught in route: {error.status_code} - {error.public_message}")
+        return jsonify({'error': error.public_message, 'success': False}), error.status_code
     except Exception as e:
         logger.exception(f"Unexpected AI chat failure for user_id={user['id']}: {e}")
-        return jsonify({'success': False, 'error': 'Talent Agent AI is temporarily unavailable. Please try again.'}), 500
+        return jsonify({'error': 'Unable to contact the AI service. Please try again.', 'success': False}), 500
 
 @ai_bp.route('/conversations', methods=['GET'])
 def list_conversations():
@@ -168,7 +190,7 @@ def list_conversations():
 def get_ai_health():
     """Returns AI service health status without exposing sensitive credentials."""
     configured = bool(Config.GROQ_API_KEY and len(Config.GROQ_API_KEY) > 5)
-    model = Config.AI_MODEL or 'openai/gpt-oss-120b'
+    model = Config.GROQ_MODEL or Config.AI_MODEL or 'llama-3.3-70b-versatile'
     provider = 'groq'
 
     return jsonify({
@@ -220,21 +242,22 @@ def regenerate_assistant_response(conversation_id):
         if last_ast_msg:
             execute_query("DELETE FROM ai_messages WHERE id = %s", (last_ast_msg['id'],), commit=True)
 
-        result = ask_ai_career_assistant(user['id'], last_user_msg['message'], conversation_id)
+        result = process_career_assistant_chat(user['id'], last_user_msg['message'], conversation_id)
         return jsonify({
             'success': True,
-            'message': result['reply'],
+            'response': result['response'],
+            'message': result['message'],
             'conversation_id': result['conversation_id']
         }), 200
-    except AIServiceError as error:
+    except GroqServiceError as error:
         return jsonify({'success': False, 'error': error.public_message}), error.status_code
     except Exception as e:
         logger.exception(f"AI regenerate failed for user_id={user['id']}: {e}")
         return jsonify({'success': False, 'error': 'Failed to regenerate response. Please try again.'}), 500
 
-@ai_bp.route('/conversations/<conversation_id>', methods=['GET', 'DELETE'])
+@ai_bp.route('/conversations/<conversation_id>', methods=['GET', 'DELETE', 'PATCH', 'PUT'])
 def conversation_detail(conversation_id):
-    """Retrieves or deletes a candidate conversation thread and its message stream."""
+    """Retrieves, deletes, or updates title of a candidate conversation thread."""
     user, err = require_candidate()
     if err: return err
 
@@ -250,6 +273,18 @@ def conversation_detail(conversation_id):
         execute_query("DELETE FROM ai_conversations WHERE id = %s AND user_id = %s", (conversation_id, user['id']), commit=True)
         return jsonify({'success': True, 'message': 'Conversation deleted.'}), 200
 
+    if request.method in ('PATCH', 'PUT'):
+        data = request.get_json() or {}
+        new_title = (data.get('title') or '').strip()
+        if not new_title:
+            return jsonify({'error': 'Title is required.'}), 400
+        execute_query(
+            "UPDATE ai_conversations SET title = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s AND user_id = %s",
+            (new_title[:255], conversation_id, user['id']),
+            commit=True
+        )
+        return jsonify({'success': True, 'message': 'Conversation renamed.', 'title': new_title}), 200
+
     messages = execute_query(
         "SELECT id, role, message as content, created_at FROM ai_messages WHERE conversation_id = %s AND user_id = %s ORDER BY id ASC",
         (conversation_id, user['id']),
@@ -260,3 +295,42 @@ def conversation_detail(conversation_id):
         'conversation': dict(conversation),
         'messages': [dict(row) for row in messages]
     }), 200
+
+@ai_bp.route('/interview/generate', methods=['POST'])
+def generate_interview_questions():
+    """Generates tailored mock interview questions based on candidate profile and optional job description."""
+    user, err = require_candidate()
+    if err: return err
+
+    data = request.get_json() or {}
+    target_role = data.get('target_role', '').strip()
+    job_description = data.get('job_description', '').strip()
+
+    try:
+        result = generate_interview_prep(user['id'], target_role, job_description)
+        return jsonify(result), 200
+    except Exception as e:
+        logger.exception(f"Interview questions generation failed for user_id={user['id']}: {e}")
+        return jsonify({'success': False, 'error': 'Failed to generate interview questions. Please try again.'}), 500
+
+@ai_bp.route('/interview/evaluate', methods=['POST'])
+def evaluate_candidate_answer():
+    """Evaluates candidate's written or recorded answer and returns detailed scoring and feedback."""
+    user, err = require_candidate()
+    if err: return err
+
+    data = request.get_json() or {}
+    question = data.get('question', '').strip()
+    answer = data.get('answer', '').strip()
+    target_role = data.get('target_role', '').strip()
+
+    if not question or not answer:
+        return jsonify({'success': False, 'error': 'Both question and answer are required for evaluation.'}), 400
+
+    try:
+        result = evaluate_interview_answer(user['id'], question, answer, target_role)
+        return jsonify(result), 200
+    except Exception as e:
+        logger.exception(f"Interview answer evaluation failed for user_id={user['id']}: {e}")
+        return jsonify({'success': False, 'error': 'Failed to evaluate answer. Please try again.'}), 500
+

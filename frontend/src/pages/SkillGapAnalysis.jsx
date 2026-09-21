@@ -18,6 +18,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { normalizeReadiness, safeString } from '../utils/userHelpers';
 import './SkillGapAnalysis.css';
 
 export const SkillGapAnalysis = () => {
@@ -42,7 +43,7 @@ export const SkillGapAnalysis = () => {
 
           // Build dynamic skill comparison from active jobs
           const candidateSkillsLower = new Set(
-            (skills || []).map((s) => String(s?.skill_name || s || '').toLowerCase().trim())
+            (skills || []).map((s) => safeString(s).toLowerCase().trim()).filter(Boolean)
           );
 
           const requiredSkillCounts = {};
@@ -170,7 +171,7 @@ export const SkillGapAnalysis = () => {
                   computedGaps.map((item) => (
                     <tr key={item.id || item.skill_name} className={!item.userHas ? 'gap-row' : ''}>
                       <td className="skill-name-td">
-                        <strong>{item.skill_name}</strong>
+                        <strong>{safeString(item.skill_name)}</strong>
                       </td>
                       <td>
                         {item.userHas ? (
@@ -185,15 +186,15 @@ export const SkillGapAnalysis = () => {
                       </td>
                       <td>
                         <span className="demand-text">
-                          Required by <strong>{item.jobs_affected}</strong> role(s)
+                          Required by <strong>{item.jobs_affected || 1}</strong> role(s)
                         </span>
                       </td>
                       <td>
                         {item.userHas ? (
                           <span className="verified-text">Match Verified ✓</span>
                         ) : (
-                          <span className={`priority-tag ${item.priority.toLowerCase()}`}>
-                            {item.priority} PRIORITY (+{item.impact_pct}%)
+                          <span className={`priority-tag ${safeString(item.priority, 'Medium').toLowerCase()}`}>
+                            {safeString(item.priority, 'Medium')} PRIORITY (+{normalizeReadiness(item.impact_pct)}%)
                           </span>
                         )}
                       </td>

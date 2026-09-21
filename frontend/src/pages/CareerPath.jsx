@@ -3,10 +3,12 @@ import { useCareer } from '../context/CareerContext';
 import { CareerCard } from '../components/CareerCard';
 import { GitFork, Sparkles, CheckCircle2, ArrowRight, Briefcase, Code, FolderGit2, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { safeString } from '../utils/userHelpers';
 import './CareerPath.css';
 
 export const CareerPath = () => {
 const { profile, careerPath } = useCareer();
+const targetRole = safeString(profile?.preferred_role, 'Software Engineer');
 
 const defaultRoadmap = [
 {
@@ -19,7 +21,7 @@ keySkills: ["Programming Fundamentals", "Data Structures", "Git"]
 },
 {
 stage: "Stage 02",
-role: `Junior ${profile?.preferred_role || 'Software Engineer'}`,
+role: `Junior ${targetRole}`,
 timeline: "Target Focus (0–1 YOE)",
 status: "CURRENT",
 description: "Ship production-ready features, master testing, and integrate with backend APIs.",
@@ -27,7 +29,7 @@ keySkills: ["Core Frameworks", "TypeScript", "Testing & Debugging"]
 },
 {
 stage: "Stage 03",
-role: `Mid-Level ${profile?.preferred_role || 'Software Engineer'}`,
+role: `Mid-Level ${targetRole}`,
 timeline: "Year 2–3",
 status: "UPCOMING",
 description: "Own feature modules end-to-end, optimize performance, and participate in technical design reviews.",
@@ -35,7 +37,7 @@ keySkills: ["System Design", "Performance Optimization", "State Architecture"]
 },
 {
 stage: "Stage 04",
-role: `Senior ${profile?.preferred_role || 'Software Engineer'}`,
+role: `Senior ${targetRole}`,
 timeline: "Year 4–5",
 status: "UPCOMING",
 description: "Lead design system architectures, mentor team members, and direct product engineering.",
@@ -43,7 +45,7 @@ keySkills: ["Technical Leadership", "Scalability", "Architecture Patterns"]
 },
 {
 stage: "Stage 05",
-role: `Principal ${profile?.preferred_role || 'Software Engineer'} / Architect`,
+role: `Principal ${targetRole} / Architect`,
 timeline: "Year 5+",
 status: "UPCOMING",
 description: "Direct global engineering strategy, evaluate emerging tech stacks, and architect enterprise platforms.",
@@ -72,7 +74,7 @@ Trajectory mapping your skills from graduate student to Senior Engineering Archi
 <Sparkles size={16} className="text-electric-blue" />
 <div>
 <span className="current-label">CURRENT GOAL STAGE</span>
-<span className="current-val">{profile?.preferred_role || 'Junior Software Engineer'}</span>
+<span className="current-val">{targetRole}</span>
 </div>
 </div>
 </div>

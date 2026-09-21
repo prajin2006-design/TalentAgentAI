@@ -12,18 +12,18 @@ export const Onboarding = () => {
 
   // Form State
   const [basic, setBasic] = useState({
-    name: profile.name || 'Alex Chen',
-    status: profile.status || 'Fresh Graduate'
+    name: profile?.name || profile?.full_name || 'Alex Chen',
+    status: profile?.status || 'Fresh Graduate'
   });
 
   const [education, setEducation] = useState({
-    degree: profile.education?.degree || 'B.S. Computer Science',
-    college: profile.education?.college || 'Stanford University',
-    field: profile.education?.field || 'Software Engineering',
-    gradYear: profile.education?.gradYear || '2026'
+    degree: profile?.education?.degree || 'B.S. Computer Science',
+    college: profile?.education?.college || 'Stanford University',
+    field: profile?.education?.field || 'Software Engineering',
+    gradYear: profile?.education?.gradYear || '2026'
   });
 
-  const [skills, setSkills] = useState(profile.skills || ['React', 'JavaScript', 'Figma', 'HTML', 'CSS', 'Git']);
+  const [skills, setSkills] = useState(Array.isArray(profile?.skills) ? profile.skills : ['React', 'JavaScript', 'Figma', 'HTML', 'CSS', 'Git']);
   const [newSkillInput, setNewSkillInput] = useState('');
 
   const [experience, setExperience] = useState({
@@ -35,10 +35,10 @@ export const Onboarding = () => {
   });
 
   const [preferences, setPreferences] = useState({
-    targetRole: profile.preferences?.targetRole || 'Frontend Developer',
-    preferredLocation: profile.preferences?.preferredLocation || 'San Francisco, CA / Remote',
-    workMode: profile.preferences?.workMode || 'Hybrid',
-    interests: profile.preferences?.interests || ['Design Systems', 'AI Frontend Integration']
+    targetRole: profile?.preferred_role || profile?.preferences?.targetRole || 'Frontend Developer',
+    preferredLocation: profile?.preferred_location || profile?.location || 'San Francisco, CA / Remote',
+    workMode: profile?.preferred_work_mode || profile?.preferences?.workMode || 'Hybrid',
+    interests: Array.isArray(profile?.preferences?.interests) ? profile.preferences.interests : ['Design Systems', 'AI Frontend Integration']
   });
 
   const handleAddSkill = (e) => {

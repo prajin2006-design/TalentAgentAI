@@ -1,19 +1,15 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { CareerProvider } from './context/CareerContext';
 import { CustomCursor } from './components/CustomCursor';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-// Layouts — kept eager since DashboardLayout wraps many routes
+// Layouts — kept eager since DashboardLayout wraps candidate routes
 import { DashboardLayout } from './layouts/DashboardLayout';
-
-// Shared auth hook — needed for AdminProtectedRoute
-import { useAuth } from './context/AuthContext';
 
 // ========================================================================
 // LAZY-LOADED PAGES — Route-Level Code Splitting
-// Each page and its dependencies load only when the route is visited.
 // ========================================================================
 
 // Public Pages & Auth
@@ -24,24 +20,29 @@ const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 
-// Legal Pages
+// Legal & Support Pages
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const SecurityCompliance = lazy(() => import('./pages/SecurityCompliance'));
+const CookiesPolicy = lazy(() => import('./pages/CookiesPolicy'));
+const AIDataUse = lazy(() => import('./pages/AIDataUse'));
+const HelpSupport = lazy(() => import('./pages/HelpSupport'));
 
 // Onboarding
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 
-// Authenticated Candidate Pages
+// Candidate Dashboard Pages
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Profile = lazy(() => import('./pages/Profile'));
 const ResumeAnalysis = lazy(() => import('./pages/ResumeAnalysis'));
 const ATSResumeMaker = lazy(() => import('./pages/ATSResumeMaker'));
 const JobMatching = lazy(() => import('./pages/JobMatching'));
-const JobRecommendations = lazy(() => import('./pages/JobRecommendations'));
+const JobDetail = lazy(() => import('./pages/JobDetail'));
+const Applications = lazy(() => import('./pages/Applications'));
 const SkillGapAnalysis = lazy(() => import('./pages/SkillGapAnalysis'));
 const CareerPath = lazy(() => import('./pages/CareerPath'));
 const Assistant = lazy(() => import('./pages/Assistant'));
+const InterviewPrep = lazy(() => import('./pages/InterviewPrep'));
 const Settings = lazy(() => import('./pages/Settings'));
 
 // Admin Pages
@@ -50,7 +51,6 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 // ========================================================================
 // SUSPENSE LOADING FALLBACK
-// Minimal, clean loading indicator — not a blank screen.
 // ========================================================================
 const PageLoader = () => (
   <div style={{
@@ -75,12 +75,28 @@ const PageLoader = () => (
 
 // Admin Security Route Gate
 const AdminProtectedRoute = ({ children }) => {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  if (isLoading) {
-    return <div style={{ padding: '4rem', textAlign: 'center' }}>Verifying admin authorization...</div>;
+  const { adminUser, isAdminAuthenticated, isAdminLoading } = useAuth();
+  if (isAdminLoading) {
+    return (
+      <div style={{ padding: '4rem', textAlign: 'center', color: '#64748B' }}>
+        Verifying administrator authorization...
+      </div>
+    );
   }
-  if (!isAuthenticated || !user || user.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
+  if (!isAdminAuthenticated && !adminUser) {
+    return <Navigate to="/admin/login" replace />;
+  }
+  return children;
+};
+
+// Candidate Protected Route Gate
+const CandidateProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) {
+    return <PageLoader />;
+  }
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
   return children;
 };
@@ -104,20 +120,26 @@ export function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
 
-                {/* Public Legal Pages */}
+                {/* Public Legal & Support Pages */}
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/security" element={<SecurityCompliance />} />
+                <Route path="/cookies" element={<CookiesPolicy />} />
+                <Route path="/ai-data-use" element={<AIDataUse />} />
+                <Route path="/help" element={<HelpSupport />} />
+                <Route path="/support" element={<HelpSupport />} />
 
                 {/* Profile Setup Wizard */}
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/profile/setup" element={<Onboarding />} />
+                <Route path="/onboarding" element={<CandidateProtectedRoute><Onboarding /></CandidateProtectedRoute>} />
+                <Route path="/profile/setup" element={<CandidateProtectedRoute><Onboarding /></CandidateProtectedRoute>} />
 
                 {/* Admin Protected Routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
                 <Route path="/admin/candidates" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
                 <Route path="/admin/candidates/:id" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+                <Route path="/admin/users" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+                <Route path="/admin/users/:id" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
                 <Route path="/admin/jobs" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
                 <Route path="/admin/matches" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
                 <Route path="/admin/resumes" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
@@ -132,11 +154,17 @@ export function App() {
                   <Route path="/resume-analysis" element={<ResumeAnalysis />} />
                   <Route path="/resume-maker" element={<ATSResumeMaker />} />
                   <Route path="/ats-resume-maker" element={<ATSResumeMaker />} />
+                  <Route path="/jobs" element={<JobMatching />} />
+                  <Route path="/jobs/:id" element={<JobDetail />} />
                   <Route path="/job-matching" element={<JobMatching />} />
-                  <Route path="/job-recommendations" element={<JobRecommendations />} />
+                  <Route path="/job-recommendations" element={<JobMatching />} />
+                  <Route path="/applications" element={<Applications />} />
                   <Route path="/skill-gaps" element={<SkillGapAnalysis />} />
                   <Route path="/career-path" element={<CareerPath />} />
+                  <Route path="/ai-agent" element={<Assistant />} />
                   <Route path="/assistant" element={<Assistant />} />
+                  <Route path="/interview" element={<InterviewPrep />} />
+                  <Route path="/mock-interview" element={<InterviewPrep />} />
                   <Route path="/settings" element={<Settings />} />
                 </Route>
 

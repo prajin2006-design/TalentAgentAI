@@ -1,6 +1,8 @@
 import io
 import logging
 import re
+import zipfile
+import xml.etree.ElementTree as ET
 from pypdf import PdfReader
 
 logger = logging.getLogger(__name__)
@@ -8,13 +10,7 @@ logger = logging.getLogger(__name__)
 def extract_text_from_pdf(pdf_source) -> dict:
     """
     Extracts text content from a PDF file (passed as bytes, file-like object, or file path).
-    Returns a dictionary:
-      {
-        'success': bool,
-        'extracted_text': str,
-        'page_count': int,
-        'error': str or None
-      }
+    Returns a dictionary with success status, extracted_text, page_count, and error message.
     """
     try:
         if isinstance(pdf_source, bytes):
@@ -54,7 +50,7 @@ def extract_text_from_pdf(pdf_source) -> dict:
                 'success': False,
                 'extracted_text': cleaned_text,
                 'page_count': page_count,
-                'error': 'This PDF appears to be image-based or scanned. Please upload a text-based PDF resume.'
+                'error': 'This PDF appears to be image-based or scanned. Please upload a text-based PDF or DOCX resume.'
             }
 
         logger.info(f"Successfully extracted {len(cleaned_text)} chars across {page_count} pages.")
@@ -73,3 +69,62 @@ def extract_text_from_pdf(pdf_source) -> dict:
             'page_count': 0,
             'error': f"Failed to extract text from PDF: {str(e)}"
         }
+
+def extract_text_from_docx(docx_source) -> dict:
+    """
+    Extracts text content from a Microsoft Word .docx document using Python built-in zipfile and ElementTree.
+    """
+    try:
+        raw_bytes = docx_source
+        if not isinstance(docx_source, bytes):
+            if hasattr(docx_source, 'read'):
+                raw_bytes = docx_source.read()
+                if hasattr(docx_source, 'seek'):
+                    docx_source.seek(0)
+            else:
+                with open(docx_source, 'rb') as f:
+                    raw_bytes = f.read()
+
+        with zipfile.ZipFile(io.BytesIO(raw_bytes)) as z:
+            xml_content = z.read('word/document.xml')
+
+        tree = ET.fromstring(xml_content)
+        texts = [node.text for node in tree.iter() if node.tag.endswith('}t') and node.text]
+        full_text = " ".join(texts).strip()
+
+        cleaned_text = re.sub(r'[\r\t]+', ' ', full_text)
+        cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+
+        if len(cleaned_text) < 20:
+            return {
+                'success': False,
+                'extracted_text': '',
+                'page_count': 1,
+                'error': 'The uploaded DOCX file contains no parseable text.'
+            }
+
+        logger.info(f"Successfully extracted {len(cleaned_text)} chars from DOCX.")
+        return {
+            'success': True,
+            'extracted_text': cleaned_text,
+            'page_count': 1,
+            'error': None
+        }
+
+    except Exception as e:
+        logger.error(f"Error parsing DOCX file: {e}")
+        return {
+            'success': False,
+            'extracted_text': '',
+            'page_count': 0,
+            'error': f"Failed to extract text from DOCX: {str(e)}"
+        }
+
+def extract_resume_text(file_source, filename: str) -> dict:
+    """
+    Unified text extraction dispatcher for PDF and DOCX files.
+    """
+    fn_lower = (filename or '').lower()
+    if fn_lower.endswith('.docx'):
+        return extract_text_from_docx(file_source)
+    return extract_text_from_pdf(file_source)

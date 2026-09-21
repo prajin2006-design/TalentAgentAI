@@ -1,6 +1,17 @@
 import React from 'react';
 import './ErrorBoundary.css';
 
+function getErrorMessage(err) {
+  if (!err) return 'An unexpected error occurred.';
+  if (typeof err === 'string') return err;
+  if (typeof err.message === 'string') return err.message;
+  try {
+    return String(err);
+  } catch (e) {
+    return 'An unexpected component error occurred.';
+  }
+}
+
 export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -29,11 +40,11 @@ export class ErrorBoundary extends React.Component {
             </div>
             <h2>Something went wrong</h2>
             <p className="text-secondary">
-              An unexpected error occurred while rendering this page. You can try refreshing the page.
+              An unexpected error occurred while rendering this view. You can try refreshing the page.
             </p>
             {this.state.error && (
               <pre className="error-details">
-                {this.state.error.toString()}
+                {getErrorMessage(this.state.error)}
               </pre>
             )}
             <button 
@@ -51,3 +62,5 @@ export class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
+
+export default ErrorBoundary;

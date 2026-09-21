@@ -1,0 +1,363 @@
+.job-detail-page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 3rem;
+}
+
+.breadcrumb-bar {
+  display: flex;
+  align-items: center;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748B;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #1E22FF;
+}
+
+.job-hero-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+.job-hero-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.job-brand-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: #EEF2FF;
+  color: #1E22FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.job-title-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.job-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.job-type-pill {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  background: #F1F5F9;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+}
+
+.job-main-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.job-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #64748B;
+}
+
+.job-meta-row .company-text {
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.job-meta-row .location-text,
+.job-meta-row .salary-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.job-meta-row .salary-text {
+  color: #059669;
+  font-weight: 600;
+}
+
+.job-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-save.saved {
+  color: #1E22FF;
+  border-color: #1E22FF;
+  background: rgba(30, 34, 255, 0.04);
+}
+
+.btn-apply {
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.applied-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #A7F3D0;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.alert-success-box {
+  background: #ECFDF5;
+  border: 1px solid #10B981;
+  color: #065F46;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.job-detail-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .job-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.job-content-col {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.detail-section h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 0.75rem;
+}
+
+.job-desc-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #334155;
+  white-space: pre-line;
+}
+
+.skills-tags-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-pill-tag {
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.skill-pill-tag.matched {
+  background: rgba(30, 34, 255, 0.08);
+  color: #1E22FF;
+  border: 1px solid rgba(30, 34, 255, 0.2);
+}
+
+.skill-pill-tag.standard {
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+}
+
+.interview-cta-box {
+  background: linear-gradient(135deg, #EEF2FF 0%, #F8FAFC 100%);
+  border: 1px solid #C7D2FE;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.interview-cta-info h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1E22FF;
+  margin-bottom: 0.25rem;
+}
+
+.interview-cta-info p {
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.job-sidebar-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.match-matrix-card {
+  padding: 1.75rem;
+}
+
+.matrix-badge-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1E22FF;
+  margin-bottom: 1rem;
+}
+
+.match-radial-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.25rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.match-score-number {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #1E22FF;
+}
+
+.match-status-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.why-recommended-box {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #475569;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+}
+
+.skills-breakdown-box {
+  margin-bottom: 1rem;
+}
+
+.skills-breakdown-box h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 0.5rem;
+}
+
+.matrix-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.resume-sync-card {
+  padding: 1.5rem;
+}
+
+.sync-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.sync-header h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.resume-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.25rem;
+}
+
+.ats-score-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #10B981;
+  background: #ECFDF5;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.sync-link {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1E22FF;
+}
+
+.job-detail-skeleton {
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}

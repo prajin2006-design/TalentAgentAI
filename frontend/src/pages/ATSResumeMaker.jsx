@@ -42,7 +42,7 @@ import {
 import './ATSResumeMaker.css';
 
 const DEFAULT_RESUME_STATE = {
-  name: 'Software Engineer Resume',
+  name: 'My ATS Resume',
   template: 'modern',
   personal_info: {
     full_name: '',
@@ -55,47 +55,15 @@ const DEFAULT_RESUME_STATE = {
     portfolio_url: ''
   },
   summary: '',
-  experience: [
-    {
-      id: 'exp-1',
-      job_title: '',
-      company: '',
-      location: '',
-      start_date: '',
-      end_date: '',
-      is_current: false,
-      description: ''
-    }
-  ],
-  education: [
-    {
-      id: 'edu-1',
-      degree: '',
-      institution: '',
-      location: '',
-      start_year: '',
-      end_year: '',
-      grade: '',
-      description: ''
-    }
-  ],
+  experience: [],
+  education: [],
   skills: {
-    programming_languages: ['JavaScript', 'TypeScript', 'Python'],
-    frameworks_libraries: ['React', 'Node.js', 'Express'],
-    databases_cloud: ['PostgreSQL', 'MongoDB', 'Docker'],
-    tools_methods: ['Git', 'REST APIs', 'Agile']
+    programming_languages: [],
+    frameworks_libraries: [],
+    databases_cloud: [],
+    tools_methods: []
   },
-  projects: [
-    {
-      id: 'proj-1',
-      name: '',
-      role: '',
-      technologies: '',
-      description: '',
-      project_url: '',
-      github_url: ''
-    }
-  ],
+  projects: [],
   certifications: [],
   achievements: [],
   languages: [],
@@ -128,7 +96,7 @@ const ATSResumeMaker = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [template, setTemplate] = useState('modern');
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [mobileTab, setMobileTab] = useState('editor');
 
@@ -142,27 +110,48 @@ const ATSResumeMaker = () => {
 
   const saveTimerRef = useRef(null);
 
-  // Load resume on mount
+  // Load or auto-create resume on mount
   useEffect(() => {
+    let isMounted = true;
     const loadResume = async () => {
+      setIsLoading(true);
       const resumeIdParam = searchParams.get('id');
-      if (resumeIdParam) {
-        setIsLoading(true);
-        try {
+      try {
+        if (resumeIdParam) {
           const data = await resumeAPI.getResumeDetail(resumeIdParam);
-          if (data && data.resume) {
+          if (isMounted && data && data.resume) {
             setResumeData({ ...DEFAULT_RESUME_STATE, ...data.resume });
             setResumeId(resumeIdParam);
             setTemplate(data.resume.template || 'modern');
           }
-        } catch (err) {
-          console.error('Failed to load resume:', err);
-        } finally {
-          setIsLoading(false);
+        } else {
+          // Fetch existing candidate resumes
+          const userResumesRes = await resumeAPI.getResumes();
+          if (isMounted) {
+            if (userResumesRes?.resumes && userResumesRes.resumes.length > 0) {
+              const latest = userResumesRes.resumes[0];
+              setResumeData({ ...DEFAULT_RESUME_STATE, ...latest });
+              setResumeId(latest.id);
+              setTemplate(latest.template || 'modern');
+            } else {
+              // Create default resume pre-filled from user profile
+              const createRes = await resumeAPI.createResume({ name: 'My ATS Resume', template: 'modern' });
+              if (createRes?.resume) {
+                setResumeData({ ...DEFAULT_RESUME_STATE, ...createRes.resume });
+                setResumeId(createRes.resume.id);
+                setTemplate(createRes.resume.template || 'modern');
+              }
+            }
+          }
         }
+      } catch (err) {
+        console.error('Failed to initialize resume:', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
     loadResume();
+    return () => { isMounted = false; };
   }, [searchParams]);
 
   // Debounced auto-save
@@ -235,12 +224,12 @@ const ATSResumeMaker = () => {
     setImprovingBulletIndex(index);
     try {
       const res = await resumeAPI.improveBullets({
-        bullets: exp.description,
-        job_title: exp.job_title,
-        company: exp.company
+        draft_text: exp.description,
+        role: exp.job_title || exp.role || 'Software Engineer',
+        company: exp.company || 'Company'
       }, resumeId);
-      if (res?.improved_bullets) {
-        updateItem('experience', index, 'description', res.improved_bullets);
+      if (res?.improved_text || res?.improved_bullets) {
+        updateItem('experience', index, 'description', res.improved_text || res.improved_bullets);
       }
     } catch (err) {
       console.error('Failed to improve bullets:', err);

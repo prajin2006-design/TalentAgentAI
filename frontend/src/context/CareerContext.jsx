@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
-import { profileAPI, aiAPI, jobsAPI } from '../services/api';
+import { profileAPI, aiAPI, jobsAPI, resumeAPI } from '../services/api';
+import { normalizeReadiness } from '../utils/userHelpers';
 
 const CareerContext = createContext(null);
 
@@ -18,7 +19,7 @@ export const CareerProvider = ({ children }) => {
   // AI & Analysis State
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [hasAnalysis, setHasAnalysis] = useState(false);
-  const [profileScore, setProfileScore] = useState(0);
+  const [profileScore, setProfileScore] = useState(75);
   const [jobMatches, setJobMatches] = useState([]);
   const [skillGaps, setSkillGaps] = useState([]);
   const [careerPath, setCareerPath] = useState([]);
@@ -53,32 +54,42 @@ export const CareerProvider = ({ children }) => {
       return;
     }
 
+    let loadedProfile = {};
     try {
       const pData = await profileAPI.getProfile();
-      setProfile(pData.profile || {});
-      setSkills(pData.skills || []);
-      setEducation(pData.education || []);
-      setExperience(pData.experience || []);
-      setProjects(pData.projects || []);
-      setResume(pData.resume || null);
-      setProfileCompletion(pData.profile_completion || 0);
-
-      const aiData = await aiAPI.getAnalysis();
-      if (aiData.has_analysis && aiData.analysis) {
-        setAiAnalysis(aiData.analysis);
-        setHasAnalysis(true);
-        setProfileScore(aiData.analysis.readiness_score || 0);
-        setJobMatches(aiData.analysis.job_matches || []);
-        setSkillGaps(aiData.analysis.skill_gaps || []);
-        setCareerPath(aiData.analysis.career_roadmap || []);
-      } else {
-        setHasAnalysis(false);
-        setProfileScore(pData.profile?.readiness_score || 0);
-        const jData = await jobsAPI.getJobs();
-        setJobMatches(jData.jobs || []);
+      if (pData) {
+        loadedProfile = pData.profile || {};
+        setProfile(loadedProfile);
+        setSkills(Array.isArray(pData.skills) ? pData.skills : []);
+        setEducation(Array.isArray(pData.education) ? pData.education : []);
+        setExperience(Array.isArray(pData.experience) ? pData.experience : []);
+        setProjects(Array.isArray(pData.projects) ? pData.projects : []);
+        setResume(pData.resume || null);
+        setProfileCompletion(normalizeReadiness(pData.profile_completion));
+        setProfileScore(normalizeReadiness(loadedProfile.readiness_score || 75));
       }
     } catch (err) {
-      console.error('Failed to load candidate career data:', err);
+      console.error('Failed to load profile data:', err);
+    }
+
+    try {
+      const aiData = await aiAPI.getAnalysis();
+      if (aiData?.has_analysis && aiData?.analysis) {
+        setAiAnalysis(aiData.analysis);
+        setHasAnalysis(true);
+        setProfileScore(normalizeReadiness(aiData.analysis.readiness_score || loadedProfile.readiness_score || 75));
+        setJobMatches(Array.isArray(aiData.analysis.job_matches) ? aiData.analysis.job_matches : []);
+        setSkillGaps(Array.isArray(aiData.analysis.skill_gaps) ? aiData.analysis.skill_gaps : []);
+        setCareerPath(Array.isArray(aiData.analysis.career_roadmap) ? aiData.analysis.career_roadmap : []);
+      } else {
+        setHasAnalysis(false);
+        const jData = await jobsAPI.getJobs();
+        if (jData?.jobs) {
+          setJobMatches(Array.isArray(jData.jobs) ? jData.jobs : []);
+        }
+      }
+    } catch (aiErr) {
+      console.warn('AI analysis load deferred:', aiErr);
     }
   }, [isAuthenticated, user]);
 
@@ -89,16 +100,16 @@ export const CareerProvider = ({ children }) => {
   // Profile Mutations
   const updateProfile = async (updatedData) => {
     const res = await profileAPI.updateProfile(updatedData);
-    setProfile((prev) => ({ ...prev, ...updatedData }));
-    if (res.profile_completion !== undefined) {
-      setProfileCompletion(res.profile_completion);
+    setProfile((prev) => ({ ...(prev || {}), ...updatedData }));
+    if (res?.profile_completion !== undefined) {
+      setProfileCompletion(normalizeReadiness(res.profile_completion));
     }
     return res;
   };
 
   const addSkill = async (skillData) => {
     const res = await profileAPI.addSkill(skillData);
-    if (res.skill) {
+    if (res?.skill) {
       setSkills((prev) => [...prev, res.skill]);
     }
     await loadCareerData();
@@ -150,8 +161,8 @@ export const CareerProvider = ({ children }) => {
   const uploadResume = async (file) => {
     const formData = new FormData();
     formData.append('resume', file);
-    const res = await profileAPI.uploadResume(formData);
-    if (res.resume) {
+    const res = await resumeAPI.uploadPDF(formData);
+    if (res?.resume) {
       setResume(res.resume);
     }
     await loadCareerData();
@@ -162,13 +173,13 @@ export const CareerProvider = ({ children }) => {
     setIsAnalyzing(true);
     try {
       const res = await aiAPI.analyzeProfile();
-      if (res.analysis) {
+      if (res?.analysis) {
         setAiAnalysis(res.analysis);
         setHasAnalysis(true);
-        setProfileScore(res.analysis.readiness_score || 0);
-        setJobMatches(res.analysis.job_matches || []);
-        setSkillGaps(res.analysis.skill_gaps || []);
-        setCareerPath(res.analysis.career_roadmap || []);
+        setProfileScore(normalizeReadiness(res.analysis.readiness_score || 75));
+        setJobMatches(Array.isArray(res.analysis.job_matches) ? res.analysis.job_matches : []);
+        setSkillGaps(Array.isArray(res.analysis.skill_gaps) ? res.analysis.skill_gaps : []);
+        setCareerPath(Array.isArray(res.analysis.career_roadmap) ? res.analysis.career_roadmap : []);
       }
       return res;
     } finally {
@@ -180,7 +191,7 @@ export const CareerProvider = ({ children }) => {
     try {
       const res = await jobsAPI.toggleSaveJob(jobId);
       setJobMatches((prev) =>
-        prev.map((j) => (j.id === jobId || j.jobId === jobId ? { ...j, saved: res.saved } : j))
+        prev.map((j) => (j.id === jobId || j.jobId === jobId ? { ...j, saved: res?.saved } : j))
       );
       return res;
     } catch (e) {
@@ -203,7 +214,7 @@ export const CareerProvider = ({ children }) => {
 
   // Conversational AI Assistant
   const sendMessageToAI = async (queryText, isRegenerate = false) => {
-    const text = queryText.trim();
+    const text = (queryText || '').trim();
     if (!text || isChatLoading) return;
 
     if (!isRegenerate) {
@@ -215,7 +226,6 @@ export const CareerProvider = ({ children }) => {
       };
       setChatMessages((prev) => [...prev, userMsg]);
     } else {
-      // If regenerating, remove previous error message if present
       setChatMessages((prev) => {
         if (prev.length > 0 && prev[prev.length - 1].sender === 'ai' && prev[prev.length - 1].isError) {
           return prev.slice(0, -1);
@@ -230,11 +240,12 @@ export const CareerProvider = ({ children }) => {
 
     try {
       const res = await aiAPI.askAssistant(text, conversationId, chatAbortRef.current.signal);
-      setConversationId(res.conversation_id);
+      setConversationId(res?.conversation_id);
+      const replyContent = res?.response || res?.message || 'Thank you for your question. How else can I assist with your career path?';
       const aiMsg = {
         id: Date.now() + 1,
         sender: 'ai',
-        text: res.message,
+        text: replyContent,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setChatMessages((prev) => [...prev, aiMsg]);
@@ -269,12 +280,12 @@ export const CareerProvider = ({ children }) => {
       const result = await aiAPI.getConversation(id);
       setConversationId(id);
       setChatError('');
-      if (result.messages) {
+      if (Array.isArray(result?.messages)) {
         setChatMessages(result.messages.map((message) => ({
           id: message.id,
-          sender: message.role === 'assistant' ? 'ai' : 'user',
-          text: message.message,
-          timestamp: new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          sender: (message.role === 'assistant' || message.sender === 'ai') ? 'ai' : 'user',
+          text: message.content || message.message || '',
+          timestamp: message.created_at ? new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'
         })));
       }
     } catch (e) {
@@ -320,6 +331,7 @@ export const CareerProvider = ({ children }) => {
         uploadResume,
         runAiAnalysis,
         toggleSaveJob,
+        applyToJob,
         sendMessageToAI,
         clearChat,
         stopChatGeneration,
@@ -339,3 +351,5 @@ export const useCareer = () => {
   }
   return context;
 };
+
+export default CareerContext;

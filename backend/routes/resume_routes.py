@@ -8,7 +8,7 @@ from flask import Blueprint, request, jsonify, send_file
 from database import execute_query
 from config import Config
 from routes.auth_routes import get_current_user_from_request
-from services.pdf_service import extract_text_from_pdf
+from services.pdf_service import extract_text_from_pdf, extract_resume_text
 from services.resume_analysis_service import (
     parse_and_structure_resume_text,
     calculate_deterministic_ats_score,
@@ -93,13 +93,16 @@ def upload_pdf_resume():
     if err: return err
 
     if 'resume' not in request.files and 'file' not in request.files:
-        return jsonify({'error': 'No resume file uploaded. Please select a PDF file.'}), 400
+        return jsonify({'error': 'No resume file uploaded. Please select a PDF or DOCX file.'}), 400
 
     file_obj = request.files.get('resume') or request.files.get('file')
     original_filename = file_obj.filename or 'resume.pdf'
+    fn_lower = original_filename.lower()
 
-    if not original_filename.lower().endswith('.pdf'):
-        return jsonify({'error': 'Only PDF resume files are supported. Please upload a .pdf document.'}), 400
+    if not (fn_lower.endswith('.pdf') or fn_lower.endswith('.docx')):
+        return jsonify({'error': 'Only PDF and DOCX resume files are supported. Please upload a .pdf or .docx document.'}), 400
+
+    mime_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' if fn_lower.endswith('.docx') else 'application/pdf'
 
     file_bytes = file_obj.read()
     file_size = len(file_bytes)
@@ -119,7 +122,7 @@ def upload_pdf_resume():
     with open(storage_path, 'wb') as f:
         f.write(file_bytes)
 
-    extraction = extract_text_from_pdf(file_bytes)
+    extraction = extract_resume_text(file_bytes, original_filename)
     if not extraction['success']:
         return jsonify({'error': extraction['error']}), 400
 

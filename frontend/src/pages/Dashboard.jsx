@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCareer } from '../context/CareerContext';
 import { dashboardAPI, jobsAPI } from '../services/api';
-import { getUserDisplayName } from '../utils/userHelpers';
+import { getUserDisplayName, normalizeReadiness, safeString } from '../utils/userHelpers';
 import {
   Sparkles,
   TrendingUp,
@@ -250,10 +250,10 @@ export const Dashboard = () => {
             </div>
           </div>
           <div className="kpi-value-row">
-            <span className="kpi-main-number">{isLoading ? '--' : `${metrics.readiness_score}%`}</span>
+            <span className="kpi-main-number">{isLoading ? '--' : `${normalizeReadiness(metrics.readiness_score)}%`}</span>
             <div className="kpi-trend-pill positive">
               <TrendingUp size={12} />
-              <span>{metrics.readiness_change}</span>
+              <span>{safeString(metrics.readiness_change, '+4.8% this month')}</span>
             </div>
           </div>
           <span className="kpi-subtext">Calibrated from profile & ATS analysis</span>
@@ -268,10 +268,10 @@ export const Dashboard = () => {
             </div>
           </div>
           <div className="kpi-value-row">
-            <span className="kpi-main-number">{isLoading ? '--' : metrics.job_matches_count}</span>
+            <span className="kpi-main-number">{isLoading ? '--' : (metrics.job_matches_count ?? 0)}</span>
             <span className="kpi-badge-live">Live Matrix</span>
           </div>
-          <span className="kpi-subtext">{metrics.total_active_jobs} total active requisitions</span>
+          <span className="kpi-subtext">{(metrics.total_active_jobs ?? 0)} total active requisitions</span>
         </div>
 
         {/* Card 3: Submitted Applications */}
@@ -283,7 +283,7 @@ export const Dashboard = () => {
             </div>
           </div>
           <div className="kpi-value-row">
-            <span className="kpi-main-number">{isLoading ? '--' : metrics.applications_count}</span>
+            <span className="kpi-main-number">{isLoading ? '--' : (metrics.applications_count ?? 0)}</span>
             <span className="kpi-badge-neutral">Submitted</span>
           </div>
           <span className="kpi-subtext">Direct submissions to active roles</span>
@@ -298,13 +298,13 @@ export const Dashboard = () => {
             </div>
           </div>
           <div className="kpi-value-row">
-            <span className="kpi-main-number">{isLoading ? '--' : `${metrics.skill_coverage_pct}%`}</span>
+            <span className="kpi-main-number">{isLoading ? '--' : `${normalizeReadiness(metrics.skill_coverage_pct)}%`}</span>
             <span className="kpi-badge-coverage">Market Fit</span>
           </div>
           <div className="kpi-progress-bar">
             <div
               className="kpi-progress-fill"
-              style={{ width: `${Math.min(100, metrics.skill_coverage_pct || 0)}%` }}
+              style={{ width: `${Math.min(100, normalizeReadiness(metrics.skill_coverage_pct))}%` }}
             />
           </div>
         </div>
@@ -381,16 +381,20 @@ export const Dashboard = () => {
 
                   {/* Skills tags */}
                   <div className="job-item-skills">
-                    {job.matchingSkills?.slice(0, 3).map((sk, sIdx) => (
-                      <span key={sIdx} className="job-skill-chip match">✓ {sk}</span>
-                    ))}
-                    {job.missingSkills?.slice(0, 2).map((sk, sIdx) => (
-                      <span key={sIdx} className="job-skill-chip gap">! {sk}</span>
-                    ))}
+                    {(Array.isArray(job.matchingSkills) ? job.matchingSkills : []).slice(0, 3).map((sk, sIdx) => {
+                      const str = typeof sk === 'string' ? sk : (sk?.skill_name || sk?.name || '');
+                      if (!str) return null;
+                      return <span key={sIdx} className="job-skill-chip match">✓ {str}</span>;
+                    })}
+                    {(Array.isArray(job.missingSkills) ? job.missingSkills : []).slice(0, 2).map((sk, sIdx) => {
+                      const str = typeof sk === 'string' ? sk : (sk?.skill_name || sk?.name || '');
+                      if (!str) return null;
+                      return <span key={sIdx} className="job-skill-chip gap">! {str}</span>;
+                    })}
                   </div>
 
                   <div className="job-item-footer">
-                    <span className="job-salary-tag">{job.salary}</span>
+                    <span className="job-salary-tag">{safeString(job.salary, '$120k – $160k')}</span>
                     <div className="job-actions-row">
                       <Link to="/job-matching" className="btn-details-link">
                         <span>Details</span>
@@ -444,26 +448,30 @@ export const Dashboard = () => {
                 <div className="skeleton-line full" />
               </div>
             ) : skillGaps.length > 0 ? (
-              skillGaps.map((gap, gIdx) => (
-                <div key={gap.id || gIdx} className="skill-gap-row">
-                  <div className="gap-info-line">
-                    <span className="gap-skill-name">{gap.skill_name}</span>
-                    <span className={`gap-priority-pill ${gap.priority.toLowerCase()}`}>
-                      {gap.priority}
-                    </span>
+              skillGaps.map((gap, gIdx) => {
+                const gapName = typeof gap.skill_name === 'string' ? gap.skill_name : (gap.skill_name?.skill_name || gap.skill_name?.name || 'Competency');
+                const gapPriority = safeString(gap.priority, 'High');
+                return (
+                  <div key={gap.id || gIdx} className="skill-gap-row">
+                    <div className="gap-info-line">
+                      <span className="gap-skill-name">{gapName}</span>
+                      <span className={`gap-priority-pill ${gapPriority.toLowerCase()}`}>
+                        {gapPriority}
+                      </span>
+                    </div>
+                    <div className="gap-progress-track">
+                      <div
+                        className="gap-progress-fill"
+                        style={{ width: `${normalizeReadiness(gap.proficiency_pct) || 65}%` }}
+                      />
+                    </div>
+                    <div className="gap-footer-meta">
+                      <span>Target: {safeString(gap.target_level, 'Intermediate')}</span>
+                      <span>Affects {gap.jobs_affected || 2} active roles</span>
+                    </div>
                   </div>
-                  <div className="gap-progress-track">
-                    <div
-                      className="gap-progress-fill"
-                      style={{ width: `${gap.proficiency_pct || 65}%` }}
-                    />
-                  </div>
-                  <div className="gap-footer-meta">
-                    <span>Target: {gap.target_level || 'Intermediate'}</span>
-                    <span>Affects {gap.jobs_affected || 2} active roles</span>
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="empty-panel-box">
                 <CheckCircle2 size={28} className="text-green" />

@@ -1,8 +1,13 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
+import { normalizeReadiness, safeString } from '../utils/userHelpers';
 import './MatchScore.css';
 
 export const MatchScore = ({ score = 82, label = "MATCH", role = "Frontend Developer" }) => {
+  const numericScore = normalizeReadiness(score);
+  const displayLabel = safeString(label, 'MATCH');
+  const displayRole = safeString(role);
+
   return (
     <div className="match-score-widget">
       <div className="score-circle-outer">
@@ -20,22 +25,24 @@ export const MatchScore = ({ score = 82, label = "MATCH", role = "Frontend Devel
             className="score-circle-fill"
             style={{
               strokeDasharray: 264,
-              strokeDashoffset: 264 - (264 * score) / 100
+              strokeDashoffset: 264 - (264 * numericScore) / 100
             }}
           />
         </svg>
         <div className="score-center-content">
-          <span className="score-number">{score}%</span>
-          <span className="score-label">{label}</span>
+          <span className="score-number">{numericScore}%</span>
+          <span className="score-label">{displayLabel}</span>
         </div>
       </div>
 
-      {role && (
+      {displayRole && (
         <div className="score-role-badge">
           <Sparkles size={12} className="role-sparkle" />
-          <span>{role}</span>
+          <span>{displayRole}</span>
         </div>
       )}
     </div>
   );
 };
+
+export default MatchScore;

@@ -39,8 +39,9 @@ class Config:
     # Groq AI API Configuration
     GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
     AI_PROVIDER = os.getenv('AI_PROVIDER', 'groq').lower()
-    AI_MODEL = os.getenv('AI_MODEL', 'openai/gpt-oss-120b')
-    GROQ_FALLBACK_MODELS = ['openai/gpt-oss-120b', 'qwen/qwen3.6-27b', 'groq/compound-mini']
+    GROQ_MODEL = os.getenv('GROQ_MODEL', os.getenv('AI_MODEL', 'openai/gpt-oss-120b'))
+    AI_MODEL = GROQ_MODEL
+    GROQ_FALLBACK_MODELS = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b', 'groq/compound-mini', 'llama-3.3-70b-versatile']
     AI_TIMEOUT_SECONDS = float(os.getenv('AI_TIMEOUT_SECONDS', '45'))
     AI_MAX_MESSAGE_LENGTH = int(os.getenv('AI_MAX_MESSAGE_LENGTH', '6000'))
     AI_MAX_HISTORY_MESSAGES = int(os.getenv('AI_MAX_HISTORY_MESSAGES', '12'))

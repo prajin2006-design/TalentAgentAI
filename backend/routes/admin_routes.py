@@ -97,6 +97,7 @@ def admin_login():
         'success': True,
         'message': 'Admin authenticated successfully.',
         'admin': admin_data,
+        'token': token
     }))
     resp.set_cookie('talent_agent_admin_token', token, httponly=True, samesite='Lax', secure=Config.COOKIE_SECURE, max_age=12 * 3600)
     return resp, 200

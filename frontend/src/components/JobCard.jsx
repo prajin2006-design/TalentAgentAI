@@ -6,24 +6,60 @@ import {
   Briefcase,
   DollarSign,
   Bookmark,
-  CheckCircle2,
-  AlertCircle,
   Sparkles,
   ArrowRight,
-  ChevronDown,
-  ChevronUp,
   X
 } from 'lucide-react';
+import { normalizeReadiness, safeString } from '../utils/userHelpers';
 import './JobCard.css';
 
-export const JobCard = ({ job }) => {
-  const { toggleSaveJob } = useCareer();
+export const JobCard = ({ job = {} }) => {
+  const { toggleSaveJob, applyToJob } = useCareer();
   const [showMatchModal, setShowMatchModal] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
+
+  const matchScore = normalizeReadiness(job.matchPercentage ?? job.match_percentage ?? 75);
 
   const getMatchBadgeClass = (score) => {
     if (score >= 88) return 'badge-accent';
     if (score >= 75) return 'badge-primary';
     return 'badge-muted';
+  };
+
+  const matchingSkills = Array.isArray(job.matchingSkills)
+    ? job.matchingSkills
+    : Array.isArray(job.matching_skills)
+    ? job.matching_skills
+    : [];
+
+  const missingSkills = Array.isArray(job.missingSkills)
+    ? job.missingSkills
+    : Array.isArray(job.missing_skills)
+    ? job.missing_skills
+    : [];
+
+  const renderSkillTag = (skill, isGap = false) => {
+    const text = typeof skill === 'string' ? skill : (skill?.skill_name || skill?.name || skill?.skill || '');
+    if (!text) return null;
+    return (
+      <span key={text} className={`badge ${isGap ? 'badge-muted' : 'badge-accent'}`}>
+        {isGap ? '! ' : '✓ '}{text}
+      </span>
+    );
+  };
+
+  const handleApply = async () => {
+    if (isApplying || job.applied) return;
+    setIsApplying(true);
+    try {
+      if (applyToJob) {
+        await applyToJob(job.id);
+      }
+    } catch (e) {
+      console.error('Failed to apply:', e);
+    } finally {
+      setIsApplying(false);
+    }
   };
 
   return (
@@ -33,52 +69,50 @@ export const JobCard = ({ job }) => {
           <div>
             <div className="job-company-row">
               <Building2 size={15} className="company-icon text-electric-blue" />
-              <span className="job-company">{job.company}</span>
-              <span className="job-worktype">{job.workType}</span>
+              <span className="job-company">{safeString(job.company, 'Tech Company')}</span>
+              <span className="job-worktype">{safeString(job.workType || job.work_mode, 'Hybrid')}</span>
             </div>
-            <h3 className="job-title">{job.title}</h3>
+            <h3 className="job-title">{safeString(job.title, 'Software Engineer')}</h3>
           </div>
 
-          <div className={`badge ${getMatchBadgeClass(job.matchPercentage)} match-badge-pill`}>
-            <Sparkles size={13} /> {job.matchPercentage}% MATCH
+          <div className={`badge ${getMatchBadgeClass(matchScore)} match-badge-pill`}>
+            <Sparkles size={13} /> {matchScore}% MATCH
           </div>
         </div>
 
         <div className="job-details-row">
           <div className="job-detail-item">
-            <MapPin size={14} /> {job.location}
+            <MapPin size={14} /> {safeString(job.location, 'Remote')}
           </div>
           {job.salary && (
             <div className="job-detail-item salary">
-              <DollarSign size={14} /> {job.salary}
+              <DollarSign size={14} /> {safeString(job.salary)}
             </div>
           )}
         </div>
 
         {/* AI Rationale Summary */}
-        <div className="job-recommend-box">
-          <Sparkles size={15} className="recommend-icon text-electric-blue" />
-          <p className="recommend-text">{job.whyRecommended}</p>
-        </div>
+        {job.whyRecommended && (
+          <div className="job-recommend-box">
+            <Sparkles size={15} className="recommend-icon text-electric-blue" />
+            <p className="recommend-text">{safeString(job.whyRecommended)}</p>
+          </div>
+        )}
 
         {/* Skills Breakdown */}
         <div className="job-skills-breakdown">
           <div className="skills-group">
-            <span className="group-label success">MATCHING SKILLS ({job.matchingSkills?.length || 0})</span>
+            <span className="group-label success">MATCHING SKILLS ({matchingSkills.length})</span>
             <div className="tags-flex">
-              {job.matchingSkills?.map((s) => (
-                <span key={s} className="badge badge-accent">✓ {s}</span>
-              ))}
+              {matchingSkills.map((s) => renderSkillTag(s, false))}
             </div>
           </div>
 
-          {job.missingSkills && job.missingSkills.length > 0 && (
+          {missingSkills.length > 0 && (
             <div className="skills-group">
-              <span className="group-label gap">SKILL GAPS ({job.missingSkills.length})</span>
+              <span className="group-label gap">SKILL GAPS ({missingSkills.length})</span>
               <div className="tags-flex">
-                {job.missingSkills.map((s) => (
-                  <span key={s} className="badge badge-muted">! {s}</span>
-                ))}
+                {missingSkills.map((s) => renderSkillTag(s, true))}
               </div>
             </div>
           )}
@@ -87,7 +121,7 @@ export const JobCard = ({ job }) => {
         {/* Card Action Buttons */}
         <div className="job-card-actions">
           <button
-            onClick={() => toggleSaveJob(job.id)}
+            onClick={() => toggleSaveJob && toggleSaveJob(job.id)}
             className={`btn btn-ghost save-btn ${job.saved ? 'saved' : ''}`}
             title={job.saved ? 'Saved' : 'Save Job'}
           >
@@ -101,8 +135,12 @@ export const JobCard = ({ job }) => {
             View Match Detail
           </button>
 
-          <button className="btn btn-primary btn-sm apply-btn hover-expand">
-            <span>Apply Now</span>
+          <button
+            onClick={handleApply}
+            disabled={isApplying || job.applied}
+            className="btn btn-primary btn-sm apply-btn hover-expand"
+          >
+            <span>{job.applied ? 'Applied' : isApplying ? 'Applying...' : 'Apply Now'}</span>
             <ArrowRight size={14} />
           </button>
         </div>
@@ -114,9 +152,9 @@ export const JobCard = ({ job }) => {
           <div className="card admin-modal-card">
             <div className="modal-header">
               <div>
-                <span className="badge badge-accent mb-1">{job.matchPercentage}% MATCH SCORE</span>
-                <h2>{job.title}</h2>
-                <p className="text-muted text-sm">{job.company} • {job.location}</p>
+                <span className="badge badge-accent mb-1">{matchScore}% MATCH SCORE</span>
+                <h2>{safeString(job.title)}</h2>
+                <p className="text-muted text-sm">{safeString(job.company)} • {safeString(job.location)}</p>
               </div>
               <button onClick={() => setShowMatchModal(false)} className="icon-action-btn">
                 <X size={20} />
@@ -128,39 +166,41 @@ export const JobCard = ({ job }) => {
                 <div className="detail-block">
                   <span className="block-label">WHY YOU'RE A MATCH</span>
                   <div className="tags-flex mt-1">
-                    {job.matchingSkills?.map((s) => (
-                      <span key={s} className="badge badge-accent">✓ {s}</span>
-                    ))}
+                    {matchingSkills.map((s) => renderSkillTag(s, false))}
                   </div>
                 </div>
 
-                {job.missingSkills && (
+                {missingSkills.length > 0 && (
                   <div className="detail-block mt-2">
                     <span className="block-label">SKILL GAPS TO BRIDGE</span>
                     <div className="tags-flex mt-1">
-                      {job.missingSkills.map((s) => (
-                        <span key={s} className="badge badge-muted">! {s}</span>
-                      ))}
+                      {missingSkills.map((s) => renderSkillTag(s, true))}
                     </div>
                   </div>
                 )}
 
                 <div className="detail-block mt-3">
                   <span className="block-label">AI COMPATIBILITY EXPLANATION</span>
-                  <p className="block-text">{job.whyRecommended} Adding missing skills will boost compatibility score above 95%.</p>
+                  <p className="block-text">{safeString(job.whyRecommended)} Addressing missing competencies will boost alignment.</p>
                 </div>
 
-                <div className="detail-block mt-3">
-                  <span className="block-label">JOB DESCRIPTION</span>
-                  <p className="block-text">{job.description}</p>
-                </div>
+                {job.description && (
+                  <div className="detail-block mt-3">
+                    <span className="block-label">JOB DESCRIPTION</span>
+                    <p className="block-text">{safeString(job.description)}</p>
+                  </div>
+                )}
 
                 <div className="modal-actions-row">
                   <button onClick={() => setShowMatchModal(false)} className="btn btn-outline">
                     Close Detail
                   </button>
-                  <button className="btn btn-primary hover-expand">
-                    Apply for Position <ArrowRight size={15} />
+                  <button
+                    onClick={() => { handleApply(); setShowMatchModal(false); }}
+                    disabled={isApplying || job.applied}
+                    className="btn btn-primary hover-expand"
+                  >
+                    {job.applied ? 'Already Applied' : isApplying ? 'Submitting...' : 'Apply for Position'} <ArrowRight size={15} />
                   </button>
                 </div>
               </div>
@@ -171,3 +211,5 @@ export const JobCard = ({ job }) => {
     </>
   );
 };
+
+export default JobCard;

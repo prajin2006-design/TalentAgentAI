@@ -51,20 +51,23 @@ export const JobMatching = () => {
   const targetLocation = profile?.preferred_location || profile?.location || 'Remote';
 
   // Client-side search and filters
-  const filteredJobs = jobMatchesList.filter((job) => {
+  const filteredJobs = (Array.isArray(jobMatchesList) ? jobMatchesList : []).filter((job) => {
     const query = searchTerm.trim().toLowerCase();
+    const matching = Array.isArray(job.matchingSkills) ? job.matchingSkills : (Array.isArray(job.matching_skills) ? job.matching_skills : []);
+    const missing = Array.isArray(job.missingSkills) ? job.missingSkills : (Array.isArray(job.missing_skills) ? job.missing_skills : []);
+
     const matchesSearch = 
       !query ||
       (job.title || '').toLowerCase().includes(query) ||
       (job.company || '').toLowerCase().includes(query) ||
       (job.location || '').toLowerCase().includes(query) ||
       (job.description || '').toLowerCase().includes(query) ||
-      (job.matchingSkills && job.matchingSkills.some(s => s.toLowerCase().includes(query))) ||
-      (job.missingSkills && job.missingSkills.some(s => s.toLowerCase().includes(query)));
+      matching.some(s => (typeof s === 'string' ? s : (s?.skill_name || s?.name || '')).toLowerCase().includes(query)) ||
+      missing.some(s => (typeof s === 'string' ? s : (s?.skill_name || s?.name || '')).toLowerCase().includes(query));
 
     const matchesRole = 
       selectedRoleFilter === 'All' || 
-      (job.workType || '').toLowerCase() === selectedRoleFilter.toLowerCase();
+      (job.workType || job.work_mode || '').toLowerCase() === selectedRoleFilter.toLowerCase();
 
     return matchesSearch && matchesRole;
   });
@@ -86,12 +89,16 @@ export const JobMatching = () => {
           <div className="candidate-skills-box">
             <span className="box-label">CANDIDATE CAPABILITIES ({skills.length})</span>
             <div className="matrix-tags-flex">
-              {skills.length > 0 ? (
-                skills.map((s) => (
-                  <span key={s.id || s.skill_name} className="badge badge-accent">
-                    ✓ {s.skill_name}
-                  </span>
-                ))
+              {Array.isArray(skills) && skills.length > 0 ? (
+                skills.map((s, sIdx) => {
+                  const sName = typeof s === 'string' ? s : (s?.skill_name || s?.name || s?.skill || '');
+                  if (!sName) return null;
+                  return (
+                    <span key={s.id || sIdx} className="badge badge-accent">
+                      ✓ {sName}
+                    </span>
+                  );
+                })
               ) : (
                 <span className="text-muted text-sm">No skills recorded yet.</span>
               )}

@@ -20,7 +20,8 @@ import { jobsAPI } from '../services/api';
 import {
   getUserDisplayName,
   getUserInitials,
-  getUserAvatarUrl
+  getUserAvatarUrl,
+  normalizeReadiness
 } from '../utils/userHelpers';
 import './DashboardLayout.css';
 
@@ -194,18 +195,18 @@ export const DashboardLayout = () => {
     );
 
     // Filter Jobs
-    const matchedJobs = jobs.filter(j => 
-      j.title.toLowerCase().includes(cleanQuery) ||
-      j.company.toLowerCase().includes(cleanQuery) ||
-      j.description.toLowerCase().includes(cleanQuery) ||
-      j.location.toLowerCase().includes(cleanQuery) ||
-      (j.requiredSkills && j.requiredSkills.some(skill => skill.toLowerCase().includes(cleanQuery)))
+    const matchedJobs = (Array.isArray(jobs) ? jobs : []).filter(j => 
+      (j.title || '').toLowerCase().includes(cleanQuery) ||
+      (j.company || '').toLowerCase().includes(cleanQuery) ||
+      (j.description || '').toLowerCase().includes(cleanQuery) ||
+      (j.location || '').toLowerCase().includes(cleanQuery) ||
+      (Array.isArray(j.requiredSkills) && j.requiredSkills.some(skill => (typeof skill === 'string' ? skill : (skill?.skill_name || '')).toLowerCase().includes(cleanQuery)))
     ).map(j => ({
       id: `job-${j.id}`,
-      name: j.title,
+      name: j.title || 'Job Opportunity',
       path: '/job-matching',
       category: 'Jobs',
-      desc: `${j.company} • ${j.location}`
+      desc: `${j.company || 'Tech Company'} • ${j.location || 'Remote'}`
     }));
 
     results = [...matchedTools, ...matchedSkills, ...matchedJobs];
@@ -317,7 +318,7 @@ export const DashboardLayout = () => {
               <div className="readiness-pill-badge">
                 <Sparkles size={13} className="pill-sparkle" />
                 <span className="pill-label">Readiness:</span>
-                <span className="pill-score">{profileScore || 0}%</span>
+                <span className="pill-score">{normalizeReadiness(profileScore)}%</span>
               </div>
 
               {/* User Account Quick Link */}

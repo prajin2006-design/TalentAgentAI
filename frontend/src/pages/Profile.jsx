@@ -21,7 +21,7 @@ import {
   ExternalLink,
   X
 } from 'lucide-react';
-import { getUserDisplayName, getUserInitials, getUserAvatarUrl } from '../utils/userHelpers';
+import { getUserDisplayName, getUserInitials, getUserAvatarUrl, normalizeReadiness, safeString } from '../utils/userHelpers';
 import './Profile.css';
 
 export const Profile = () => {
@@ -487,21 +487,25 @@ export const Profile = () => {
             )}
 
             <div className="skills-badge-wrap">
-              {skills && skills.length > 0 ? (
-                skills.map((s) => (
-                  <div key={s.id || s.skill_name} className="skill-tag-pill">
-                    <span className="skill-name-str">{s.skill_name}</span>
-                    {s.proficiency && <span className="skill-pct-str">{s.proficiency}%</span>}
-                    <button
-                      type="button"
-                      onClick={() => deleteSkill(s.id)}
-                      className="skill-remove-x"
-                      title="Remove skill"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))
+              {Array.isArray(skills) && skills.length > 0 ? (
+                skills.map((s, sIdx) => {
+                  const sName = typeof s === 'string' ? s : (s?.skill_name || s?.name || s?.skill || '');
+                  if (!sName) return null;
+                  return (
+                    <div key={s.id || sIdx} className="skill-tag-pill">
+                      <span className="skill-name-str">{sName}</span>
+                      {s.proficiency && <span className="skill-pct-str">{normalizeReadiness(s.proficiency)}%</span>}
+                      <button
+                        type="button"
+                        onClick={() => deleteSkill(s.id)}
+                        className="skill-remove-x"
+                        title="Remove skill"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  );
+                })
               ) : (
                 <p className="empty-section-hint">No skills recorded yet. Add your key proficiencies to calculate job matches.</p>
               )}

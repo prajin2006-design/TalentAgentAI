@@ -1,122 +1,123 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Lock, Mail, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { ShieldCheck, Lock, Mail, ArrowRight, AlertCircle, Sparkles, Loader2 } from 'lucide-react';
 import './Auth.css';
-
-/*
- * DEV DEMO AUTHENTICATION CONFIGURATION
- * Note: In production, this frontend credential check is replaced by a POST request
- * to the Flask backend authentication endpoint (/api/admin/login) which sets a secure
- * HttpOnly JWT session cookie.
- */
-const DEMO_ADMIN_CREDENTIALS = {
-  email: 'admin@talentagent.ai',
-  password: 'admin' // Demo password for local development
-};
 
 export const AdminLogin = () => {
   const [email, setEmail] = useState('admin@talentagent.ai');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { adminLogin, isAdminAuthenticated } = useAuth();
 
   useEffect(() => {
-    // Check if already authenticated in session storage
-    if (sessionStorage.getItem('talent_agent_admin_auth') === 'true') {
+    if (isAdminAuthenticated) {
       navigate('/admin');
     }
-  }, [navigate]);
+  }, [isAdminAuthenticated, navigate]);
 
-  const handleAdminLogin = (e) => {
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
-    setErrorMsg('');
+    if (!email || !password) return;
 
-    // Frontend validation logic (replaces backend POST /api/admin/login)
-    if (
-      email.trim().toLowerCase() === DEMO_ADMIN_CREDENTIALS.email &&
-      password === DEMO_ADMIN_CREDENTIALS.password
-    ) {
-      sessionStorage.setItem('talent_agent_admin_auth', 'true');
-      sessionStorage.setItem('talent_agent_admin_user', email);
+    setErrorMsg('');
+    setLoading(true);
+
+    try {
+      await adminLogin({ email: email.trim().toLowerCase(), password });
       navigate('/admin');
-    } else {
-      setErrorMsg('Invalid admin credentials.');
+    } catch (err) {
+      setErrorMsg(err.message || 'Invalid administrator credentials.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="auth-page-wrapper">
-      <div className="auth-container">
+    <div className="auth-page-container">
+      <div className="auth-card-wrapper">
         {/* Brand Header */}
-        <div className="auth-brand-logo">
-          <div className="logo-badge">
-            <Sparkles size={16} className="logo-sparkle" />
+        <div className="auth-brand-stack text-center">
+          <Link to="/" className="auth-brand-logo">
+            <span className="logo-dot" />
+            <span className="logo-text">TALENT AGENT <span className="text-electric-blue">AI</span></span>
+          </Link>
+          <div className="badge badge-accent mb-2" style={{ alignSelf: 'center', marginTop: '0.5rem' }}>
+            <ShieldCheck size={14} /> SECURITY GATE
           </div>
-          <span className="logo-brand">
-            TALENT AGENT <span className="logo-accent">AI</span>
-          </span>
+          <h1 className="auth-heading">Administrator Portal</h1>
+          <p className="auth-subtext">Authorized credentials required for talent management access.</p>
         </div>
 
-        <div className="card auth-card">
-          <div className="auth-header">
-            <div className="badge badge-accent mb-2">
-              <ShieldCheck size={14} /> SECURITY GATE
+        {errorMsg && (
+          <div className="auth-error-alert" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <AlertCircle size={16} />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleAdminLogin} className="auth-form-stack">
+          <div className="form-group">
+            <label className="form-label" htmlFor="admin-email">Admin Email</label>
+            <div className="input-with-icon">
+              <Mail size={18} className="input-icon" />
+              <input
+                id="admin-email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@talentagent.ai"
+                className="input-field-auth"
+              />
             </div>
-            <h2 className="auth-title">ADMIN ACCESS</h2>
-            <p className="auth-subtitle">Authorized administrator credentials required.</p>
           </div>
 
-          {errorMsg && (
-            <div className="error-banner">
-              <AlertCircle size={16} />
-              <span>{errorMsg}</span>
+          <div className="form-group">
+            <label className="form-label" htmlFor="admin-password">Password</label>
+            <div className="input-with-icon">
+              <Lock size={18} className="input-icon" />
+              <input
+                id="admin-password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter admin password"
+                className="input-field-auth"
+              />
             </div>
-          )}
-
-          <form onSubmit={handleAdminLogin} className="auth-form">
-            <div className="form-group">
-              <label className="input-label">Email / Username</label>
-              <div className="input-icon-wrapper">
-                <Mail size={16} className="input-left-icon" />
-                <input
-                  type="text"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@talentagent.ai"
-                  className="input-field with-icon"
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="input-label">Password</label>
-              <div className="input-icon-wrapper">
-                <Lock size={16} className="input-left-icon" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="input-field with-icon"
-                />
-              </div>
-            </div>
-
-            <button type="submit" className="btn btn-accent btn-full hover-expand">
-              Enter Admin →
-            </button>
-          </form>
-
-          <div className="auth-footer-note">
-            Return to{' '}
-            <a href="/" className="auth-switch-link">
-              Main Site
-            </a>
           </div>
+
+          <button
+            type="submit"
+            disabled={!email || !password || loading}
+            className="btn btn-accent btn-full auth-submit-btn"
+          >
+            {loading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                <span>Authenticating...</span>
+              </>
+            ) : (
+              <>
+                <span>Enter Admin Console</span>
+                <ArrowRight size={17} />
+              </>
+            )}
+          </button>
+        </form>
+
+        <div className="auth-footer-text text-center">
+          <Link to="/login" className="auth-link">
+            ← Return to Candidate Sign In
+          </Link>
         </div>
       </div>
     </div>
   );
 };
+
+export default AdminLogin;
