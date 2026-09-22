@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ArrowRight, User, LogOut, Sparkles, Menu, X, Zap } from 'lucide-react';
+import { ArrowRight, User, LogOut, Menu, X, Sparkles } from 'lucide-react';
 import './Navbar.css';
 
 export const Navbar = () => {
@@ -16,13 +16,12 @@ export const Navbar = () => {
   const navRef = useRef(null);
   const isNavScrollingRef = useRef(false);
 
-  // 1. Measure Live Navbar Height & Propagate `--nav-h` to Root CSS Variable
+  // 1. Measure Live Navbar Height & Propagate `--nav-h`
   useEffect(() => {
     const updateNavHeight = () => {
       if (navRef.current) {
         const rect = navRef.current.getBoundingClientRect();
-        // Comfortable clearance so section eyebrow badges land clearly below the fixed navbar
-        const totalNavOffset = Math.round(rect.height + rect.top + 32);
+        const totalNavOffset = Math.round(rect.height + rect.top + 24);
         document.documentElement.style.setProperty('--nav-h', `${totalNavOffset}px`);
       }
     };
@@ -37,10 +36,10 @@ export const Navbar = () => {
     };
   }, []);
 
-  // 2. Track Window Scroll Position for Compact Glass Pill State
+  // 2. Track Window Scroll Position
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 25);
+      setIsScrolled(window.scrollY > 20);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -53,12 +52,9 @@ export const Navbar = () => {
 
     const sectionsToObserve = [
       { id: 'features', labelId: 'features' },
-      { id: 'ats-resume', labelId: 'ats-resume' },
       { id: 'how-it-works', labelId: 'how-it-works' },
       { id: 'job-intelligence', labelId: 'job-intelligence' },
-      { id: 'jobs', labelId: 'job-intelligence' },
-      { id: 'co-pilot', labelId: 'co-pilot' },
-      { id: 'about', labelId: 'co-pilot' }
+      { id: 'co-pilot', labelId: 'co-pilot' }
     ];
 
     const elements = sectionsToObserve
@@ -69,9 +65,7 @@ export const Navbar = () => {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // DO NOT OVERRIDE active section state if user is currently click-scrolling
         if (isNavScrollingRef.current) return;
-
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const matched = sectionsToObserve.find(s => s.id === entry.target.id);
@@ -89,11 +83,10 @@ export const Navbar = () => {
     );
 
     elements.forEach(item => observer.observe(item.el));
-
     return () => observer.disconnect();
   }, [isAuthenticated, location.pathname]);
 
-  // 4. Smooth Anchor Scroll Click Handler with Observer Lockout
+  // 4. Smooth Anchor Scroll Click Handler
   const handleNavClick = (e, sectionId) => {
     e.preventDefault();
     setIsMobileMenuOpen(false);
@@ -103,19 +96,14 @@ export const Navbar = () => {
       return;
     }
 
-    const targetEl = document.getElementById(sectionId) ||
-      (sectionId === 'job-intelligence' ? document.getElementById('jobs') : null) ||
-      (sectionId === 'co-pilot' ? document.getElementById('about') : null);
-
+    const targetEl = document.getElementById(sectionId);
     if (!targetEl) return;
 
-    // Lock IntersectionObserver while click-scroll is executing
     isNavScrollingRef.current = true;
     setActiveSection(sectionId);
 
     targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // Release lockout once smooth scroll settles
     let scrollTimeout;
     const unlockScroll = () => {
       isNavScrollingRef.current = false;
@@ -137,56 +125,39 @@ export const Navbar = () => {
   const isCurrent = (path) => location.pathname === path;
 
   return (
-    <div ref={navRef} className={`navbar-floating-container ${isScrolled ? 'scrolled' : ''}`}>
-      <header className={`navbar-pill-bar ${isScrolled ? 'scrolled' : ''}`}>
-        {/* Logo */}
-        <Link to={isAuthenticated ? '/dashboard' : '/'} className="navbar-logo-group">
-          <span className="logo-brand-title font-display">
-            TALENT AGENT <span className="logo-blue-badge">AI</span>
+    <div ref={navRef} className={`navbar-wrapper ${isScrolled ? 'is-scrolled' : ''}`}>
+      <header className="navbar-container">
+        {/* Left: Brand Logo */}
+        <Link to={isAuthenticated ? '/dashboard' : '/'} className="navbar-brand">
+          <div className="brand-logo-mark">
+            <Sparkles size={16} className="brand-sparkle-icon" />
+          </div>
+          <span className="brand-text">
+            Talent Agent <span className="brand-ai-badge">AI</span>
           </span>
-          <span className="logo-live-pulse-dot" title="Neural Agent Live" />
         </Link>
 
-        {/* Desktop Navigation Items */}
-        <nav className="navbar-menu-items">
+        {/* Center: Desktop Navigation */}
+        <nav className="navbar-center-nav">
           {isAuthenticated ? (
             <>
-              <Link
-                to="/dashboard"
-                className={`nav-pill-item ${isCurrent('/dashboard') ? 'active' : ''}`}
-              >
+              <Link to="/dashboard" className={`nav-link ${isCurrent('/dashboard') ? 'active' : ''}`}>
                 Dashboard
               </Link>
-              <Link
-                to="/resume-maker"
-                className={`nav-pill-item ${isCurrent('/resume-maker') ? 'active' : ''}`}
-              >
-                <Sparkles size={13} className="text-electric-blue" />
-                <span>Resume Maker</span>
+              <Link to="/resume-maker" className={`nav-link ${isCurrent('/resume-maker') ? 'active' : ''}`}>
+                Resume Maker
               </Link>
-              <Link
-                to="/job-matching"
-                className={`nav-pill-item ${isCurrent('/job-matching') ? 'active' : ''}`}
-              >
-                Matches
+              <Link to="/job-matching" className={`nav-link ${isCurrent('/job-matching') ? 'active' : ''}`}>
+                Job Matches
               </Link>
-              <Link
-                to="/skill-gaps"
-                className={`nav-pill-item ${isCurrent('/skill-gaps') ? 'active' : ''}`}
-              >
+              <Link to="/skill-gaps" className={`nav-link ${isCurrent('/skill-gaps') ? 'active' : ''}`}>
                 Skill Gaps
               </Link>
-              <Link
-                to="/career-path"
-                className={`nav-pill-item ${isCurrent('/career-path') ? 'active' : ''}`}
-              >
+              <Link to="/career-path" className={`nav-link ${isCurrent('/career-path') ? 'active' : ''}`}>
                 Roadmap
               </Link>
-              <Link
-                to="/assistant"
-                className={`nav-pill-item ${isCurrent('/assistant') ? 'active' : ''}`}
-              >
-                Co-Pilot
+              <Link to="/assistant" className={`nav-link ${isCurrent('/assistant') ? 'active' : ''}`}>
+                AI Assistant
               </Link>
             </>
           ) : (
@@ -194,75 +165,63 @@ export const Navbar = () => {
               <a
                 href="#features"
                 onClick={(e) => handleNavClick(e, 'features')}
-                className={`nav-pill-item ${activeSection === 'features' ? 'active' : ''}`}
+                className={`nav-link ${activeSection === 'features' ? 'active' : ''}`}
               >
                 Features
               </a>
               <a
-                href="#ats-resume"
-                onClick={(e) => handleNavClick(e, 'ats-resume')}
-                className={`nav-pill-item highlighted-nav-link ${activeSection === 'ats-resume' ? 'active' : ''}`}
-              >
-                <Sparkles size={13} className="text-electric-blue" />
-                <span>ATS Resume</span>
-              </a>
-              <a
                 href="#how-it-works"
                 onClick={(e) => handleNavClick(e, 'how-it-works')}
-                className={`nav-pill-item ${activeSection === 'how-it-works' ? 'active' : ''}`}
+                className={`nav-link ${activeSection === 'how-it-works' ? 'active' : ''}`}
               >
                 How It Works
               </a>
               <a
                 href="#job-intelligence"
                 onClick={(e) => handleNavClick(e, 'job-intelligence')}
-                className={`nav-pill-item ${activeSection === 'job-intelligence' ? 'active' : ''}`}
+                className={`nav-link ${activeSection === 'job-intelligence' ? 'active' : ''}`}
               >
                 Job Intelligence
               </a>
               <a
                 href="#co-pilot"
                 onClick={(e) => handleNavClick(e, 'co-pilot')}
-                className={`nav-pill-item ${activeSection === 'co-pilot' ? 'active' : ''}`}
+                className={`nav-link ${activeSection === 'co-pilot' ? 'active' : ''}`}
               >
-                Co-Pilot
+                AI Assistant
               </a>
             </>
           )}
         </nav>
 
-        {/* Right CTA Actions */}
-        <div className="navbar-cta-actions">
+        {/* Right: Auth & Action CTAs */}
+        <div className="navbar-right-actions">
           {isAuthenticated ? (
-            <div className="auth-user-nav-flex">
-              <Link to="/profile" className="nav-profile-pill">
+            <div className="navbar-auth-user">
+              <Link to="/profile" className="nav-profile-btn">
                 <User size={15} />
                 <span>{user?.full_name?.split(' ')[0] || 'Profile'}</span>
               </Link>
-              <button onClick={handleLogout} className="btn-logout-nav" title="Sign Out">
+              <button onClick={handleLogout} className="nav-logout-btn" title="Sign Out">
                 <LogOut size={15} />
               </button>
             </div>
           ) : (
-            <>
-              <Link to="/resume-maker" className="nav-pill-item-accent hide-on-mobile">
-                <Zap size={14} />
-                <span>Build Resume</span>
-              </Link>
-              <Link to="/login" className="nav-login-btn">
+            <div className="navbar-public-actions">
+              <Link to="/login" className="nav-signin-link">
                 Sign In
               </Link>
-              <Link to="/signup" className="btn btn-primary nav-cta-pill hover-expand">
+              <Link to="/signup" className="nav-getstarted-btn">
                 <span>Get Started</span>
-                <ArrowRight size={14} />
+                <ArrowRight size={14} className="nav-btn-arrow" />
               </Link>
-            </>
+            </div>
           )}
 
-          {/* Mobile Menu Hamburger */}
+          {/* Mobile Hamburger Toggle */}
           <button
             type="button"
-            className="mobile-hamburger-btn"
+            className="navbar-mobile-toggle"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle navigation menu"
           >
@@ -271,14 +230,14 @@ export const Navbar = () => {
         </div>
       </header>
 
-      {/* Mobile Drawer Dropdown */}
+      {/* Mobile Drawer */}
       {isMobileMenuOpen && (
-        <div className="mobile-nav-drawer animate-fade-in">
+        <div className="navbar-mobile-drawer animate-fade-in">
           {isAuthenticated ? (
             <div className="mobile-nav-links">
               <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</Link>
-              <Link to="/resume-maker" onClick={() => setIsMobileMenuOpen(false)}>ATS Resume Maker</Link>
-              <Link to="/job-matching" onClick={() => setIsMobileMenuOpen(false)}>Job Matching</Link>
+              <Link to="/resume-maker" onClick={() => setIsMobileMenuOpen(false)}>Resume Maker</Link>
+              <Link to="/job-matching" onClick={() => setIsMobileMenuOpen(false)}>Job Matches</Link>
               <Link to="/skill-gaps" onClick={() => setIsMobileMenuOpen(false)}>Skill Gaps</Link>
               <Link to="/career-path" onClick={() => setIsMobileMenuOpen(false)}>Career Roadmap</Link>
               <Link to="/assistant" onClick={() => setIsMobileMenuOpen(false)}>AI Assistant</Link>
@@ -287,14 +246,18 @@ export const Navbar = () => {
             </div>
           ) : (
             <div className="mobile-nav-links">
-              <a href="#features" onClick={(e) => handleNavClick(e, 'features')}>Platform Features</a>
-              <a href="#ats-resume" onClick={(e) => handleNavClick(e, 'ats-resume')}>ATS Resume Maker</a>
+              <a href="#features" onClick={(e) => handleNavClick(e, 'features')}>Features</a>
               <a href="#how-it-works" onClick={(e) => handleNavClick(e, 'how-it-works')}>How It Works</a>
               <a href="#job-intelligence" onClick={(e) => handleNavClick(e, 'job-intelligence')}>Job Intelligence</a>
-              <a href="#co-pilot" onClick={(e) => handleNavClick(e, 'co-pilot')}>AI Career Co-Pilot</a>
-              <div className="mobile-drawer-auth-actions">
-                <Link to="/login" className="btn btn-secondary w-full" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
-                <Link to="/signup" className="btn btn-primary w-full" onClick={() => setIsMobileMenuOpen(false)}>Get Started Free</Link>
+              <a href="#co-pilot" onClick={(e) => handleNavClick(e, 'co-pilot')}>AI Assistant</a>
+              <div className="mobile-drawer-cta-group">
+                <Link to="/login" className="btn btn-secondary w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                  Sign In
+                </Link>
+                <Link to="/signup" className="nav-getstarted-btn w-full text-center" onClick={() => setIsMobileMenuOpen(false)}>
+                  <span>Get Started Free</span>
+                  <ArrowRight size={14} />
+                </Link>
               </div>
             </div>
           )}

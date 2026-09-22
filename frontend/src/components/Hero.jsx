@@ -1,222 +1,207 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
-import { CareerNetwork3D } from './CareerNetwork3D';
+import { ArrowRight, Check, Sparkles, TrendingUp, ShieldCheck, Target, Layers } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './Hero.css';
 
-/**
- * HeroHeadline — Progressive Line-by-Line Character Reveal
- * Line 1: "Your career,"
- * Line 2: "powered by"
- * Line 3: "intelligence." (with text-gradient-intelligence class)
- * Zero layout shift via ghost character geometry reservation.
- * Converts to static <h1> once animation completes.
- */
-const HeroHeadline = ({ onComplete }) => {
-  const lines = [
-    { text: "Your career,", isGradient: false },
-    { text: "powered by", isGradient: false },
-    { text: "intelligence.", isGradient: true }
-  ];
-
-  const [lineProgress, setLineProgress] = useState([0, 0, 0]);
-  const [isFinished, setIsFinished] = useState(false);
-
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      setLineProgress([lines[0].text.length, lines[1].text.length, lines[2].text.length]);
-      setIsFinished(true);
-      if (onComplete) onComplete();
-      return;
-    }
-
-    let lineIdx = 0;
-    let charIdx = 0;
-    let timeoutId = null;
-
-    const startTimeout = setTimeout(() => {
-      const typeNextChar = () => {
-        if (lineIdx >= lines.length) {
-          setIsFinished(true);
-          if (onComplete) onComplete();
-          return;
-        }
-
-        const currentTarget = lines[lineIdx].text;
-        charIdx++;
-
-        setLineProgress(prev => {
-          const next = [...prev];
-          next[lineIdx] = charIdx;
-          return next;
-        });
-
-        if (charIdx < currentTarget.length) {
-          const isComma = currentTarget[charIdx - 1] === ',';
-          timeoutId = setTimeout(typeNextChar, isComma ? 120 : 38);
-        } else {
-          lineIdx++;
-          charIdx = 0;
-          timeoutId = setTimeout(typeNextChar, 140);
-        }
-      };
-
-      typeNextChar();
-    }, 300);
-
-    return () => {
-      clearTimeout(startTimeout);
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, []);
-
-  if (isFinished) {
-    return (
-      <h1 className="hero-headline">
-        Your career,<br />
-        powered by <span className="text-gradient-intelligence">intelligence</span>.
-      </h1>
-    );
-  }
-
-  return (
-    <h1 className="hero-headline" aria-label="Your career, powered by intelligence.">
-      <span className="hero-headline-line">
-        <span className="typed-visible">{lines[0].text.slice(0, lineProgress[0])}</span>
-        <span className="typed-ghost" aria-hidden="true">{lines[0].text.slice(lineProgress[0])}</span>
-      </span>
-      <br />
-      <span className="hero-headline-line">
-        <span className="typed-visible">{lines[1].text.slice(0, lineProgress[1])}</span>
-        <span className="typed-ghost" aria-hidden="true">{lines[1].text.slice(lineProgress[1])}</span>
-      </span>
-      {' '}
-      <span className="hero-headline-line">
-        <span className={`typed-visible ${lineProgress[2] > 0 ? 'text-gradient-intelligence' : ''}`}>
-          {lines[2].text.slice(0, lineProgress[2])}
-        </span>
-        <span className="typed-ghost text-gradient-intelligence" aria-hidden="true">
-          {lines[2].text.slice(lineProgress[2])}
-        </span>
-      </span>
-    </h1>
-  );
-};
-
 export const Hero = () => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isBadgeVisible, setIsBadgeVisible] = useState(false);
-  const [isSubtextVisible, setIsSubtextVisible] = useState(false);
-  const [isCtaVisible, setIsCtaVisible] = useState(false);
-  const [isTrustVisible, setIsTrustVisible] = useState(false);
-  const [isVisualVisible, setIsVisualVisible] = useState(false);
+  const { isAuthenticated } = useAuth();
 
-  const heroRef = useRef(null);
-
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      setIsBadgeVisible(true);
-      setIsSubtextVisible(true);
-      setIsCtaVisible(true);
-      setIsTrustVisible(true);
-      setIsVisualVisible(true);
-      return;
+  const handleScrollToHowItWorks = (e) => {
+    e.preventDefault();
+    const el = document.getElementById('how-it-works');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-
-    // Sequence timing
-    const t1 = setTimeout(() => setIsBadgeVisible(true), 150);
-    const t2 = setTimeout(() => setIsSubtextVisible(true), 1800);
-    const t3 = setTimeout(() => setIsCtaVisible(true), 2100);
-    const t4 = setTimeout(() => setIsTrustVisible(true), 2300);
-    const t5 = setTimeout(() => setIsVisualVisible(true), 2400);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
-      clearTimeout(t5);
-    };
-  }, []);
-
-  const handleMouseMove = (e) => {
-    if (!heroRef.current) return;
-    const rect = heroRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setMousePos({ x, y });
-  };
-
-  const handleMouseLeave = () => {
-    setMousePos({ x: 0, y: 0 });
-  };
-
-  const handleHeadlineComplete = () => {
-    setIsSubtextVisible(true);
-    setIsCtaVisible(true);
-    setIsTrustVisible(true);
-    setIsVisualVisible(true);
   };
 
   return (
-    <section
-      ref={heroRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className="hero-section"
-      aria-label="Talent Agent AI Hero"
-    >
-      <div className="container-wide hero-layout-grid">
-        {/* Left: Typography & Actions */}
-        <div className="hero-text-col">
-          {/* Eyebrow badge */}
-          <div className={`hero-eyebrow-chip ${isBadgeVisible ? 'revealed' : ''}`}>
-            <span className="eyebrow-dot" />
-            <span>Autonomous Career Intelligence Platform</span>
+    <section className="hero-section" aria-label="Talent Agent AI Overview">
+      {/* Background ambient lighting */}
+      <div className="hero-ambient-glow lavender-glow" />
+      <div className="hero-ambient-glow lime-glow" />
+
+      <div className="hero-grid-container">
+        {/* Left Column: 55% */}
+        <div className="hero-left-column">
+          {/* Eyebrow */}
+          <div className="hero-eyebrow">
+            <Sparkles size={13} className="hero-eyebrow-icon" />
+            <span>AI CAREER AGENT</span>
           </div>
 
-          {/* Headline */}
-          <HeroHeadline onComplete={handleHeadlineComplete} />
+          {/* Main Headline */}
+          <h1 className="hero-main-headline">
+            Your career.<br />
+            <span className="hero-lavender-accent">Decoded.</span>
+          </h1>
 
-          {/* Supporting Copy */}
-          <p className={`hero-subtext ${isSubtextVisible ? 'revealed' : ''}`}>
-            AI-driven career matching, resume intelligence, skill-gap analysis, and career guidance for the next generation of professionals.
+          {/* Subtext */}
+          <p className="hero-lead-paragraph">
+            Talent Agent AI analyzes your resume, skills, experience, and goals to help you find the right opportunities and understand what to improve next.
           </p>
 
-          {/* Call-to-Action Group */}
-          <div className={`hero-cta-group ${isCtaVisible ? 'revealed' : ''}`}>
-            <Link to="/signup" className="btn btn-primary btn-lg hero-cta-primary">
-              <span>Get started</span>
-              <ArrowRight size={17} />
+          {/* Action CTAs */}
+          <div className="hero-cta-action-row">
+            <Link
+              to={isAuthenticated ? '/dashboard' : '/signup'}
+              className="hero-primary-cta"
+            >
+              <span>{isAuthenticated ? 'Go to Dashboard' : 'Analyze My Profile'}</span>
+              <ArrowRight size={17} className="hero-cta-arrow" />
             </Link>
 
-            <a href="#how-it-works" className="btn btn-secondary btn-lg hero-cta-secondary">
-              <span>Explore Talent Agent AI</span>
+            <a
+              href="#how-it-works"
+              onClick={handleScrollToHowItWorks}
+              className="hero-secondary-cta"
+            >
+              <span>See How It Works</span>
             </a>
           </div>
 
-          {/* Trust Validation Indicators */}
-          <div className={`hero-trust-indicators ${isTrustVisible ? 'revealed' : ''}`}>
-            <div className="trust-indicator-item">
-              <CheckCircle2 size={15} className="text-electric-blue" />
-              <span>100% Machine-Readable ATS Resumes</span>
+          {/* Trust / Value points row */}
+          <div className="hero-trust-value-row">
+            <div className="hero-trust-item">
+              <span className="hero-trust-check">
+                <Check size={13} strokeWidth={3} />
+              </span>
+              <span>Resume Intelligence</span>
             </div>
-            <div className="trust-indicator-item">
-              <CheckCircle2 size={15} className="text-electric-blue" />
-              <span>Multi-Dimensional Job Scoring</span>
+            <div className="hero-trust-item">
+              <span className="hero-trust-check">
+                <Check size={13} strokeWidth={3} />
+              </span>
+              <span>AI Job Matching</span>
             </div>
-            <div className="trust-indicator-item">
-              <CheckCircle2 size={15} className="text-electric-blue" />
-              <span>Personalized Skill Gap Roadmaps</span>
+            <div className="hero-trust-item">
+              <span className="hero-trust-check">
+                <Check size={13} strokeWidth={3} />
+              </span>
+              <span>Skill Gap Analysis</span>
             </div>
           </div>
         </div>
 
-        {/* Right: 3D Interactive Career Intelligence Visual */}
-        <div className={`hero-visual-col ${isVisualVisible ? 'revealed' : ''}`}>
-          <CareerNetwork3D mousePos={mousePos} />
+        {/* Right Column: 45% Product Mockup */}
+        <div className="hero-right-column">
+          <div className="hero-mockup-wrapper">
+            {/* Floating Card 1: 12 Skills Detected */}
+            <div className="hero-floating-card floating-card-top">
+              <div className="floating-card-icon-box lime-bg">
+                <Layers size={14} className="text-black" />
+              </div>
+              <div className="floating-card-text">
+                <span className="floating-card-title">12 skills detected</span>
+                <span className="floating-card-sub">from uploaded profile</span>
+              </div>
+            </div>
+
+            {/* Main Product Card: Career Snapshot */}
+            <div className="hero-dashboard-card">
+              {/* Card Top Header */}
+              <div className="dashboard-card-header">
+                <div>
+                  <span className="dashboard-card-label">CAREER SNAPSHOT</span>
+                  <h3 className="dashboard-card-role">Frontend Developer</h3>
+                </div>
+                <div className="dashboard-card-badge">
+                  <span className="badge-live-pulse" />
+                  <span>AI Calibrated</span>
+                </div>
+              </div>
+
+              {/* Match Score Indicator Section */}
+              <div className="dashboard-score-section">
+                <div className="circular-score-ring">
+                  <svg viewBox="0 0 100 100" className="score-svg-circle">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      className="score-circle-bg"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      className="score-circle-fill"
+                      strokeDasharray="251.2"
+                      strokeDashoffset="40.19" /* 84% filled */
+                    />
+                  </svg>
+                  <div className="score-center-text">
+                    <span className="score-number">84%</span>
+                    <span className="score-unit">MATCH</span>
+                  </div>
+                </div>
+
+                <div className="score-details-summary">
+                  <span className="score-verdict-tag">High Compatibility</span>
+                  <p className="score-verdict-desc">
+                    Your skills closely match 42 active engineering requisitions.
+                  </p>
+                </div>
+              </div>
+
+              {/* Skills Breakdown */}
+              <div className="dashboard-skills-breakdown">
+                {/* Matching Skills */}
+                <div className="skills-block">
+                  <span className="skills-block-title">MATCHING SKILLS (4)</span>
+                  <div className="skills-tags-wrap">
+                    <span className="skill-chip match-chip">
+                      <Check size={11} strokeWidth={3} className="skill-check-icon" /> React
+                    </span>
+                    <span className="skill-chip match-chip">
+                      <Check size={11} strokeWidth={3} className="skill-check-icon" /> JavaScript
+                    </span>
+                    <span className="skill-chip match-chip">
+                      <Check size={11} strokeWidth={3} className="skill-check-icon" /> CSS
+                    </span>
+                    <span className="skill-chip match-chip">
+                      <Check size={11} strokeWidth={3} className="skill-check-icon" /> Figma
+                    </span>
+                  </div>
+                </div>
+
+                {/* Skill Gaps */}
+                <div className="skills-block">
+                  <span className="skills-block-title">SKILL GAPS (2)</span>
+                  <div className="skills-tags-wrap">
+                    <span className="skill-chip gap-chip">
+                      <span className="gap-indicator-dot" /> TypeScript
+                    </span>
+                    <span className="skill-chip gap-chip">
+                      <span className="gap-indicator-dot" /> Testing
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Next Best Move Insight */}
+              <div className="dashboard-next-move-box">
+                <div className="next-move-header">
+                  <Sparkles size={13} className="next-move-sparkle" />
+                  <span className="next-move-label">NEXT BEST MOVE</span>
+                </div>
+                <p className="next-move-text">
+                  "Build one TypeScript project to improve your job readiness."
+                </p>
+              </div>
+            </div>
+
+            {/* Floating Card 2: 3 Skill Gaps */}
+            <div className="hero-floating-card floating-card-bottom">
+              <div className="floating-card-icon-box lavender-bg">
+                <Target size={14} className="text-white" />
+              </div>
+              <div className="floating-card-text">
+                <span className="floating-card-title">3 skill gaps</span>
+                <span className="floating-card-sub">prioritized for closing</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
