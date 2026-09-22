@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCareer } from '../context/CareerContext';
 import { dashboardAPI, jobsAPI } from '../services/api';
-import { getUserDisplayName, normalizeReadiness, safeString } from '../utils/userHelpers';
+import { getUserDisplayName, normalizeReadiness, safeString, getWelcomeName } from '../utils/userHelpers';
 import {
   Sparkles,
   TrendingUp,
@@ -195,6 +195,7 @@ export const Dashboard = () => {
   };
 
   const displayName = getUserDisplayName(user, profile);
+  const welcomeMessage = getWelcomeName(user, profile);
   const metrics = dashboardData?.metrics || {
     readiness_score: 75,
     readiness_change: '+4.8% this month',
@@ -211,12 +212,12 @@ export const Dashboard = () => {
 
   return (
     <div className="saas-dashboard-container">
-      {/* 1. TOP GREETING & TELEMETRY HEADER */}
+      {/* 1. TOP GREETING & STATUS HEADER */}
       <div className="dashboard-welcome-banner">
         <div className="welcome-text-group">
-          <h1 className="welcome-heading">Welcome back, {displayName}</h1>
+          <h1 className="welcome-heading">{welcomeMessage}</h1>
           <p className="welcome-subtext">
-            Here is your real-time career intelligence, active match matrix, and skill trajectory.
+            Your career insights, job matches, and next steps — all in one place.
           </p>
         </div>
 
@@ -315,16 +316,16 @@ export const Dashboard = () => {
         <div className="card-header-flex">
           <div>
             <h3 className="card-title">Career Activity</h3>
-            <p className="card-subtitle">Telemetry of evaluated matches and direct applications over time</p>
+            <p className="card-subtitle">Your job matches and applications over time</p>
           </div>
 
-          {/* Timeframe selector tabs */}
+          {/* Segmented timeframe control */}
           <div className="timeframe-tabs">
             {[
-              { key: '7d', label: '7 Days' },
-              { key: '30d', label: '30 Days' },
-              { key: '90d', label: '3 Months' },
-              { key: '1y', label: '1 Year' }
+              { key: '7d', label: '7D' },
+              { key: '30d', label: '30D' },
+              { key: '90d', label: '3M' },
+              { key: '1y', label: '1Y' }
             ].map(tab => (
               <button
                 key={tab.key}
@@ -490,7 +491,7 @@ export const Dashboard = () => {
           <div className="card-header-flex">
             <div>
               <h3 className="card-title">Recent Activity</h3>
-              <p className="card-subtitle">Real-time candidate telemetry log</p>
+              <p className="card-subtitle">Your latest career actions</p>
             </div>
           </div>
 
@@ -533,7 +534,7 @@ export const Dashboard = () => {
 
           <div className="quick-actions-grid">
             <Link to="/resume-maker" className="quick-action-card">
-              <div className="quick-action-icon blue">
+              <div className="quick-action-icon lavender">
                 <FileText size={18} />
               </div>
               <div className="quick-action-info">
@@ -544,7 +545,7 @@ export const Dashboard = () => {
             </Link>
 
             <Link to="/resume-analysis" className="quick-action-card">
-              <div className="quick-action-icon purple">
+              <div className="quick-action-icon lime">
                 <Target size={18} />
               </div>
               <div className="quick-action-info">

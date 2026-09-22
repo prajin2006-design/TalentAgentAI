@@ -84,23 +84,67 @@ export function normalizeSkill(skill) {
  * @param {Object} [profile] - Optional candidate profile object
  * @returns {string}
  */
+/** Known OAuth/provider placeholder names that should be ignored and replaced. */
+const PLACEHOLDER_NAMES = new Set([
+  'google candidate',
+  'google user',
+  'github user',
+  'facebook user',
+  'candidate',
+  'user',
+  'new user',
+  'unnamed',
+  'unknown',
+]);
+
+/**
+ * Returns true if the name looks like an OAuth provider label / placeholder.
+ * @param {string} name
+ * @returns {boolean}
+ */
+function isPlaceholderName(name) {
+  if (!name || typeof name !== 'string') return true;
+  return PLACEHOLDER_NAMES.has(name.trim().toLowerCase());
+}
+
+/**
+ * Returns a human-friendly display name for the user/profile.
+ * Sanitizes known OAuth placeholder names (e.g. "Google Candidate").
+ * Priority: profile.full_name → user.full_name → email prefix → 'Candidate'
+ * @param {Object|string} user - User object or display name string
+ * @param {Object} [profile] - Optional candidate profile object
+ * @returns {string}
+ */
 export function getUserDisplayName(user, profile = null) {
-  if (typeof user === 'string' && user.trim()) {
+  // If a bare string is passed, only use it if it's not a placeholder
+  if (typeof user === 'string' && user.trim() && !isPlaceholderName(user)) {
     return user.trim();
   }
 
+  // Profile full_name has highest priority (user may have updated it post-OAuth)
   if (profile && typeof profile === 'object') {
-    if (typeof profile.full_name === 'string' && profile.full_name.trim()) return profile.full_name.trim();
-    if (typeof profile.name === 'string' && profile.name.trim()) return profile.name.trim();
+    if (typeof profile.full_name === 'string' && profile.full_name.trim() && !isPlaceholderName(profile.full_name))
+      return profile.full_name.trim();
+    if (typeof profile.name === 'string' && profile.name.trim() && !isPlaceholderName(profile.name))
+      return profile.name.trim();
   }
 
   if (user && typeof user === 'object') {
-    if (typeof user.full_name === 'string' && user.full_name.trim()) return user.full_name.trim();
-    if (typeof user.name === 'string' && user.name.trim()) return user.name.trim();
-    if (typeof user.displayName === 'string' && user.displayName.trim()) return user.displayName.trim();
+    // profile_full_name = candidate-editable name from candidate_profiles table (highest trust)
+    if (typeof user.profile_full_name === 'string' && user.profile_full_name.trim() && !isPlaceholderName(user.profile_full_name))
+      return user.profile_full_name.trim();
+    // User account full_name (skip if placeholder)
+    if (typeof user.full_name === 'string' && user.full_name.trim() && !isPlaceholderName(user.full_name))
+      return user.full_name.trim();
+    if (typeof user.name === 'string' && user.name.trim() && !isPlaceholderName(user.name))
+      return user.name.trim();
+    if (typeof user.displayName === 'string' && user.displayName.trim() && !isPlaceholderName(user.displayName))
+      return user.displayName.trim();
+    // Last resort: use email username part
     if (typeof user.email === 'string' && user.email.includes('@')) {
-      const prefix = user.email.split('@')[0];
-      return prefix.charAt(0).toUpperCase() + prefix.slice(1);
+      const prefix = user.email.split('@')[0].replace(/[._\-]/g, ' ').trim();
+      const formatted = prefix.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      if (formatted) return formatted;
     }
   }
 
@@ -174,4 +218,31 @@ export function getUserRoleOrHeadline(user, profile = null) {
     if (user.role === 'admin') return 'Platform Administrator';
   }
   return 'Software Engineer';
+}
+
+/**
+ * Returns just the first name from a full display name or user object.
+ * Used for friendly welcome messages like "Welcome back, Prajin".
+ * @param {Object|string} user
+ * @param {Object} [profile]
+ * @returns {string}
+ */
+export function getFirstName(user, profile = null) {
+  const fullName = getUserDisplayName(user, profile);
+  if (!fullName || fullName === 'Candidate') return '';
+  // Return the first word of the full name
+  return fullName.split(/\s+/)[0];
+}
+
+/**
+ * Returns a personalized welcome string.
+ * If name resolves to something real, returns "Welcome back, Prajin".
+ * If not, returns "Welcome back".
+ * @param {Object|string} user
+ * @param {Object} [profile]
+ * @returns {string}
+ */
+export function getWelcomeName(user, profile = null) {
+  const firstName = getFirstName(user, profile);
+  return firstName ? `Welcome back, ${firstName}` : 'Welcome back';
 }

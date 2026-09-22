@@ -6,34 +6,54 @@
    ========================================================================== */
 
 :root {
-  /* Core Color Palette */
-  --color-primary: #2F46FF;          /* Talent Agent Electric Blue */
-  --color-primary-hover: #1E35E0;    /* Darker Hover Blue */
-  --color-primary-subtle: #EEF2FF;   /* Soft Blue Accent Tint */
-  --color-primary-glow: rgba(47, 70, 255, 0.12);
+  /* =========================================================
+     TALENT AGENT AI — 2026 BRAND DESIGN TOKENS
+     Brand: Black / Lime / Lavender / Warm Off-White
+  ========================================================= */
 
-  --color-ai-accent: #6C5CE7;        /* Secondary AI Intelligence Purple */
-  --color-ai-subtle: #F4F1FF;        /* Soft Purple Accent Tint */
-  --color-ai-glow: rgba(108, 92, 231, 0.12);
+  /* Primary Brand Colors */
+  --color-primary: #111111;              /* Brand Primary: Deep Black */
+  --color-primary-hover: #222222;        /* Slightly lighter on hover */
+  --color-primary-subtle: #F4F4F0;       /* Warm off-white tint for subtle fills */
+  --color-primary-glow: rgba(17, 17, 17, 0.08);
 
-  --color-text: #111111;             /* Deep Near-Black Text */
-  --color-text-secondary: #667085;   /* Secondary Slate Subtext */
-  --color-text-muted: #98A2B3;       /* Placeholder & Muted Metadata */
+  /* Lime Accent — Success / Progress / AI Highlights */
+  --color-lime: #B8FF22;
+  --color-lime-subtle: #F4FFD8;
+  --color-lime-border: rgba(184, 255, 34, 0.35);
 
-  --color-bg: #F8F9FC;               /* Canvas Background */
-  --color-surface: #FFFFFF;          /* Card & Modal Background */
-  --color-surface-hover: #F8FAFC;    /* Subtle Hover Fill */
+  /* Lavender Accent — AI / Smart / Career Intelligence */
+  --color-lavender: #7765FF;
+  --color-lavender-subtle: #FAF8FF;
+  --color-lavender-border: #E5DEFF;
+  --color-lavender-glow: rgba(119, 101, 255, 0.12);
 
-  --color-border: #E7EAF0;           /* Clean 1px Border */
-  --color-border-hover: #D0D5DD;     /* Hover Border */
-  --color-border-subtle: #F0F2F6;
+  /* Deprecated blue references re-mapped to lavender for smooth transition */
+  --color-ai-accent: #7765FF;
+  --color-ai-subtle: #FAF8FF;
+  --color-ai-glow: rgba(119, 101, 255, 0.12);
+
+  /* Text Scale */
+  --color-text: #111111;                 /* Deep Near-Black */
+  --color-text-secondary: #667085;       /* Muted slate subtext */
+  --color-text-muted: #98A2B3;           /* Placeholder text */
+
+  /* Surfaces */
+  --color-bg: #F8F8F5;                   /* Warm off-white canvas */
+  --color-surface: #FFFFFF;              /* Cards and panels */
+  --color-surface-hover: #F4F4F0;        /* Hover fill */
+
+  /* Borders */
+  --color-border: #E6E6E1;               /* Thin 1px border */
+  --color-border-hover: #D0D0CA;         /* Border on hover */
+  --color-border-subtle: #F0F0EB;        /* Very subtle dividers */
 
   /* Semantic Feedback Colors */
   --color-success: #16A36A;
   --color-success-subtle: #ECFDF3;
   --color-success-border: #A6F4C5;
 
-  --color-warning: #F59E0B;
+  --color-warning: #D97706;
   --color-warning-subtle: #FFFBEB;
   --color-warning-border: #FDE68A;
 
@@ -41,28 +61,28 @@
   --color-error-subtle: #FEF2F2;
   --color-error-border: #FECACA;
 
-  /* Typography Tokens (Inter) */
+  /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-display: var(--font-sans);
 
-  /* Border Radii */
+  /* Border Radii — 8px System */
   --radius-xs: 6px;
   --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 14px;
-  --radius-card: 16px;
+  --radius-card: 18px;
   --radius-pill: 9999px;
 
-  /* Shadows & Elevation */
-  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
-  --shadow-sm: 0 2px 6px rgba(16, 24, 40, 0.04), 0 1px 2px rgba(16, 24, 40, 0.02);
-  --shadow-md: 0 6px 18px -2px rgba(16, 24, 40, 0.06), 0 2px 6px -1px rgba(16, 24, 40, 0.02);
-  --shadow-lg: 0 12px 28px -4px rgba(16, 24, 40, 0.08), 0 4px 10px -2px rgba(16, 24, 40, 0.03);
-  --shadow-primary: 0 6px 20px -2px rgba(47, 70, 255, 0.28);
+  /* Refined Shadows */
+  --shadow-xs: 0 1px 3px rgba(17, 17, 17, 0.04);
+  --shadow-sm: 0 2px 8px rgba(17, 17, 17, 0.04), 0 1px 3px rgba(17, 17, 17, 0.02);
+  --shadow-md: 0 6px 20px -2px rgba(17, 17, 17, 0.06), 0 2px 8px rgba(17, 17, 17, 0.02);
+  --shadow-lg: 0 14px 32px -4px rgba(17, 17, 17, 0.08), 0 4px 12px rgba(17, 17, 17, 0.03);
+  --shadow-primary: 0 6px 20px -2px rgba(17, 17, 17, 0.2);
 
   /* Layout Dimensions */
-  --sidebar-w: 250px;
-  --header-h: 68px;
+  --sidebar-w: 258px;
+  --header-h: 64px;
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);

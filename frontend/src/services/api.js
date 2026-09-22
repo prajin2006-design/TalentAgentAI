@@ -25,9 +25,44 @@ async function request(endpoint, options = {}) {
     credentials: 'include' // Sends HTTP-only cookies
   };
 
+  let response;
   try {
-    const response = await fetch(url, config);
+    response = await fetch(url, config);
+  } catch (initialErr) {
+    if (initialErr.name === 'AbortError') {
+      throw initialErr;
+    }
+    let fallbackWorked = false;
+    // Transparently resolve Windows localhost IPv6 (::1) vs IPv4 (127.0.0.1)
+    if (url.includes('://localhost:')) {
+      try {
+        const altUrl = url.replace('://localhost:', '://127.0.0.1:');
+        response = await fetch(altUrl, config);
+        fallbackWorked = true;
+      } catch {}
+    } else if (url.includes('://127.0.0.1:')) {
+      try {
+        const altUrl = url.replace('://127.0.0.1:', '://localhost:');
+        response = await fetch(altUrl, config);
+        fallbackWorked = true;
+      } catch {}
+    }
 
+    if (!fallbackWorked) {
+      // Try Vite dev-server proxy if direct port access failed
+      try {
+        response = await fetch(`/api${endpoint}`, config);
+        fallbackWorked = true;
+      } catch {}
+    }
+
+    if (!fallbackWorked) {
+      const connErr = new Error("Unable to connect to the server. Check that the backend is running.");
+      throw connErr;
+    }
+  }
+
+  try {
     // If downloading a binary blob (e.g. PDF or DOCX export)
     if (options.responseType === 'blob') {
       if (!response.ok) {
@@ -54,7 +89,7 @@ async function request(endpoint, options = {}) {
         if (response.status === 404) {
           message = 'The requested service endpoint was not found.';
         } else if (response.status === 401) {
-          message = 'Session expired or unauthorized. Please sign in to continue.';
+          message = 'Incorrect email or password.';
         } else if (response.status === 403) {
           message = 'You do not have permission to perform this action.';
         } else if (response.status === 500) {
@@ -74,8 +109,8 @@ async function request(endpoint, options = {}) {
     if (err.name === 'AbortError') {
       throw err;
     }
-    if (!err.status) {
-      err.message = 'Unable to connect to the backend server. Please verify your connection.';
+    if (!err.status && !err.message) {
+      err.message = 'Unable to connect to the server. Check that the backend is running.';
     }
     throw err;
   }

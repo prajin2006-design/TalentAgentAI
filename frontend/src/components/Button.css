@@ -42,7 +42,7 @@
 .btn-secondary:focus-visible,
 .btn-ghost:focus-visible,
 .btn-danger:focus-visible {
-  outline: 2px solid rgba(36, 59, 255, 0.4);
+  outline: 2px solid rgba(17, 17, 17, 0.35);
   outline-offset: 2px;
 }
 
@@ -65,22 +65,22 @@
 }
 
 /* --------------------------------------------------------------------------
-   1. PRIMARY BUTTON (Solid #243BFF, Subtle Shadow, Micro-Hover)
+   1. PRIMARY BUTTON (Black #111111, White text)
    -------------------------------------------------------------------------- */
 .btn-primary,
 button.btn-primary {
-  background-color: var(--color-primary, #243BFF);
+  background-color: #111111;
   color: #FFFFFF;
-  border-color: var(--color-primary, #243BFF);
-  box-shadow: 0 1px 2px rgba(36, 59, 255, 0.24);
+  border-color: #111111;
+  box-shadow: 0 1px 3px rgba(17, 17, 17, 0.2);
 }
 
 .btn-primary:hover:not(:disabled),
 button.btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-hover, #1A2FE0);
-  border-color: var(--color-primary-hover, #1A2FE0);
+  background-color: #222222;
+  border-color: #222222;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(36, 59, 255, 0.28);
+  box-shadow: 0 4px 12px rgba(17, 17, 17, 0.25);
 }
 
 /* --------------------------------------------------------------------------
@@ -89,19 +89,19 @@ button.btn-primary:hover:not(:disabled) {
 .btn-secondary,
 button.btn-secondary {
   background-color: #FFFFFF;
-  border: 1px solid var(--color-border, #E2E5EC);
-  border-color: var(--color-border, #E2E5EC);
-  color: var(--color-text, #111827);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--color-border, #E6E6E1);
+  border-color: var(--color-border, #E6E6E1);
+  color: var(--color-text, #111111);
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.03);
 }
 
 .btn-secondary:hover:not(:disabled),
 button.btn-secondary:hover:not(:disabled) {
-  background-color: #F8FAFC;
-  border-color: #CBD5E1;
-  color: var(--color-text, #111827);
+  background-color: #FAFAF8;
+  border-color: #D0D0CA;
+  color: var(--color-text, #111111);
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 6px rgba(17, 17, 17, 0.05);
 }
 
 /* --------------------------------------------------------------------------
@@ -113,7 +113,7 @@ button.btn-ghost,
 button.btn-tertiary {
   background-color: transparent;
   border-color: transparent;
-  color: var(--color-muted, #64748B);
+  color: var(--color-text-secondary, #667085);
   box-shadow: none;
 }
 
@@ -121,8 +121,51 @@ button.btn-tertiary {
 button.btn-ghost:hover:not(:disabled),
 .btn-tertiary:hover:not(:disabled),
 button.btn-tertiary:hover:not(:disabled) {
-  background-color: #F1F5F9;
-  color: var(--color-text, #111827);
+  background-color: var(--color-surface-hover, #F4F4F0);
+  color: var(--color-text, #111111);
+}
+
+/* --------------------------------------------------------------------------
+   4. AI BUTTON (Lavender — for AI-powered actions)
+   -------------------------------------------------------------------------- */
+.btn-ai,
+button.btn-ai {
+  background-color: rgba(119, 101, 255, 0.1);
+  color: #7765FF;
+  border-color: rgba(119, 101, 255, 0.25);
+  box-shadow: none;
+}
+
+.btn-ai:hover:not(:disabled),
+button.btn-ai:hover:not(:disabled) {
+  background-color: rgba(119, 101, 255, 0.15);
+  border-color: rgba(119, 101, 255, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(119, 101, 255, 0.15);
+}
+
+/* --------------------------------------------------------------------------
+   5. LIME / SUCCESS BUTTON (Lime — for primary success CTAs)
+   -------------------------------------------------------------------------- */
+.btn-lime,
+.btn-success,
+button.btn-lime,
+button.btn-success {
+  background-color: #B8FF22;
+  color: #111111;
+  border-color: #B8FF22;
+  box-shadow: 0 1px 3px rgba(184, 255, 34, 0.3);
+  font-weight: 700;
+}
+
+.btn-lime:hover:not(:disabled),
+.btn-success:hover:not(:disabled),
+button.btn-lime:hover:not(:disabled),
+button.btn-success:hover:not(:disabled) {
+  background-color: #ceff55;
+  border-color: #ceff55;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(184, 255, 34, 0.35);
 }
 
 /* --------------------------------------------------------------------------

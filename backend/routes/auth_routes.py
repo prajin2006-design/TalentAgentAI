@@ -538,14 +538,16 @@ def google_auth():
             # SAFELY LINK EXISTING ACCOUNT TO GOOGLE IDENTITY
             user_id = existing_user['id']
             provider_str = 'local+google' if existing_user.get('auth_provider') == 'local' else 'google'
+            clean_name = full_name if full_name and (not existing_user.get('full_name') or existing_user.get('full_name').lower() in ('google candidate', 'user', 'google user', 'candidate')) else existing_user.get('full_name', full_name)
             execute_query(
                 """
                 UPDATE users
                 SET google_sub = %s, auth_provider = %s, avatar_url = COALESCE(avatar_url, %s),
+                    full_name = COALESCE(%s, full_name),
                     email_verified = True, last_login_at = CURRENT_TIMESTAMP
                 WHERE id = %s
                 """,
-                (google_sub, provider_str, avatar_url, user_id),
+                (google_sub, provider_str, avatar_url, clean_name, user_id),
                 commit=True
             )
             existing_oauth = execute_query("SELECT id FROM oauth_accounts WHERE user_id = %s AND provider = 'google'", (user_id,), fetchone=True)
@@ -559,12 +561,13 @@ def google_auth():
             log_audit_event(user_id, 'user', 'google_account_linked', 'user', user_id, f"Linked Google identity to email={email}", request.remote_addr)
         else:
             # CREATE NEW USER ACCOUNT FOR GOOGLE AUTHENTICATION
+            candidate_name = full_name or email.split('@')[0].replace('.', ' ').replace('_', ' ').title()
             user_id = execute_query(
                 """
                 INSERT INTO users (full_name, email, password_hash, email_verified, auth_provider, avatar_url, google_sub, role, is_active)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
-                (full_name, email, None, True, 'google', avatar_url, google_sub, 'candidate', True),
+                (candidate_name, email, None, True, 'google', avatar_url, google_sub, 'candidate', True),
                 commit=True,
                 return_id=True
             )
@@ -575,14 +578,22 @@ def google_auth():
     else:
         if user.get('role') != 'candidate':
             return jsonify({'success': False, 'error': 'This account is not eligible for candidate access.'}), 403
+        if full_name and (not user.get('full_name') or user.get('full_name').lower() in ('google candidate', 'user', 'google user', 'candidate')):
+            execute_query("UPDATE users SET full_name = %s WHERE id = %s", (full_name, user['id']), commit=True)
+            user['full_name'] = full_name
         execute_query("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = %s", (user['id'],), commit=True)
         log_audit_event(user['id'], 'user', 'google_login_success', 'user', user['id'], f"Google login for: {email}", request.remote_addr)
+
+    # Determine sanitized display name
+    resolved_name = user.get('full_name', '')
+    if not resolved_name or resolved_name.lower() in ('google candidate', 'user', 'google user', 'candidate'):
+        resolved_name = full_name or (email.split('@')[0].replace('.', ' ').replace('_', ' ').title())
 
     token = generate_jwt_token({
         'user_id': user['id'],
         'email': user['email'],
         'role': user['role'],
-        'full_name': user['full_name']
+        'full_name': resolved_name
     })
 
     # Send login security email alert for Google authentication (non-blocking)
@@ -598,7 +609,8 @@ def google_auth():
 
     user_data = {
         'id': user['id'],
-        'full_name': user['full_name'],
+        'full_name': resolved_name,
+        'profile_full_name': resolved_name,
         'email': user['email'],
         'role': user['role'],
         'auth_provider': user.get('auth_provider', 'google'),
@@ -801,9 +813,23 @@ def get_me():
 
     profile_status = get_profile_status(user['id'])
 
+    candidate_profile = execute_query(
+        "SELECT headline, preferred_role FROM candidate_profiles WHERE user_id = %s",
+        (user['id'],),
+        fetchone=True
+    ) or {}
+
+    raw_name = user.get('full_name') or ''
+    if not raw_name or raw_name.lower() in ('google candidate', 'user', 'google user', 'candidate'):
+        if user.get('email'):
+            raw_name = user['email'].split('@')[0].replace('.', ' ').replace('_', ' ').title()
+        else:
+            raw_name = 'Candidate'
+
     user_data = {
         'id': user['id'],
-        'full_name': user['full_name'],
+        'full_name': raw_name,
+        'profile_full_name': raw_name,
         'email': user['email'],
         'role': user['role'],
         'email_verified': bool(user.get('email_verified')),
@@ -818,6 +844,7 @@ def get_me():
         'user': user_data,
         **profile_status
     }), 200
+
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
