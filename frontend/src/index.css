@@ -33,6 +33,12 @@
   --color-ai-subtle: #FAF8FF;
   --color-ai-glow: rgba(119, 101, 255, 0.12);
 
+  /* Royal-Indigo Blue Texture Reference System */
+  --color-royal-blue: #304FE8;
+  --color-indigo-deep: #263BC4;
+  --color-blue-highlight: #4264FF;
+  --texture-geom-line: rgba(255, 255, 255, 0.18);
+
   /* Text Scale */
   --color-text: #111111;                 /* Deep Near-Black */
   --color-text-secondary: #667085;       /* Muted slate subtext */
@@ -575,7 +581,7 @@ p, .body-text {
 
 /* Gradient text accents */
 .text-gradient-ai {
-  background: linear-gradient(135deg, #2F46FF 0%, #6C5CE7 100%);
+  background: linear-gradient(135deg, #7765FF 0%, #304FE8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -584,6 +590,17 @@ p, .body-text {
 
 .text-electric-blue {
   color: var(--color-primary) !important;
+}
+
+/* Reusable Vivid Textured Royal-Indigo Blue Background */
+.bg-textured-royal-blue {
+  background-color: #304FE8;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.18) 0px, rgba(255, 255, 255, 0.18) 1px, transparent 1px, transparent 56px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.18) 0px, rgba(255, 255, 255, 0.18) 1px, transparent 1px, transparent 56px),
+    radial-gradient(ellipse 90% 80% at 20% 20%, #4264FF 0%, rgba(66, 100, 255, 0) 70%),
+    linear-gradient(145deg, #304FE8 0%, #263BC4 100%);
 }
 
 /* Accessibility */

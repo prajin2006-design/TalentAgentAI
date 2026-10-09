@@ -37,7 +37,7 @@ import './AdminDashboard.css';
 const ReadinessIndicator = ({ score }) => {
   const getFillColor = (s) => {
     if (s >= 80) return '#10B981'; // green
-    if (s >= 65) return '#1E22FF'; // electric blue
+    if (s >= 65) return '#7765FF'; // soft lavender
     if (s >= 40) return '#F59E0B'; // orange
     return '#EF4444'; // red
   };
@@ -90,8 +90,8 @@ const UserAvatar = ({ fullName, avatarUrl, size = 32 }) => {
         width: size, 
         height: size, 
         borderRadius: '50%', 
-        backgroundColor: '#EEF2FF', 
-        color: '#1E22FF', 
+        backgroundColor: '#FAF8FF', 
+        color: '#7765FF', 
         display: 'flex', 
         alignItems: 'center', 
         justify: 'center', 

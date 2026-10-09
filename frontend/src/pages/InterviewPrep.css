@@ -157,8 +157,8 @@
 }
 
 .q-nav-btn.active {
-  background: #1E22FF;
-  border-color: #1E22FF;
+  background: #111111;
+  border-color: #111111;
   color: #FFFFFF;
 }
 
@@ -186,8 +186,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: rgba(30, 34, 255, 0.08);
-  color: #1E22FF;
+  background: rgba(119, 101, 255, 0.08);
+  color: #7765FF;
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.3rem 0.6rem;

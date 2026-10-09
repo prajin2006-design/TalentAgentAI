@@ -812,6 +812,9 @@ export const Home = () => {
           </div>
         </div>
       </footer>
+
+      {/* Outer Footer Textured Royal-Indigo Blue Surround Band */}
+      <div className="footer-textured-blue-surround" aria-hidden="true" />
     </div>
   );
 };

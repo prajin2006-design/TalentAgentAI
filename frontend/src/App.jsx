@@ -65,8 +65,8 @@ const PageLoader = () => (
       width: 36,
       height: 36,
       borderRadius: '50%',
-      border: '3px solid rgba(30, 34, 255, 0.1)',
-      borderTopColor: '#1E22FF',
+      border: '3px solid rgba(48, 79, 232, 0.15)',
+      borderTopColor: '#304FE8',
       animation: 'pageLoaderSpin 0.7s linear infinite'
     }} />
     <style>{`@keyframes pageLoaderSpin { to { transform: rotate(360deg); } }`}</style>
