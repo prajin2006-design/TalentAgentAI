@@ -85,9 +85,9 @@ async function request(endpoint, options = {}) {
 
     if (!response.ok) {
       let message = (data && typeof data === 'object') ? (data.error || data.message) : data;
-      if (!message || typeof message !== 'string') {
+      if (!message || typeof message !== 'string' || message.trim() === 'Not Found' || message.includes('<!DOCTYPE') || message.includes('<html')) {
         if (response.status === 404) {
-          message = 'The requested service endpoint was not found.';
+          message = 'The backend API service is not reachable (404 Not Found). Please verify that the backend server is deployed and running.';
         } else if (response.status === 401) {
           message = 'Incorrect email or password.';
         } else if (response.status === 403) {

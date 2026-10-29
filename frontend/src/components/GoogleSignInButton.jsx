@@ -41,7 +41,11 @@ export const GoogleSignInButton = ({ onError, label = 'Continue with Google' }) 
         const redirectUrl = res.redirect || (res.profile_complete ? '/dashboard' : '/profile/setup');
         navigate(redirectUrl);
       } catch (err) {
-        if (onError) onError(err.message || 'Google authentication failed.');
+        let errorMsg = err.message || 'Google authentication failed.';
+        if (err.status === 404 || errorMsg.trim() === 'Not Found') {
+          errorMsg = 'Backend API service is unreachable (404 Not Found). Please verify that the backend server is deployed and running.';
+        }
+        if (onError) onError(errorMsg);
       } finally {
         if (isMounted) setLoading(false);
       }

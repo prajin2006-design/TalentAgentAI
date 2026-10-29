@@ -50,7 +50,7 @@ class Config:
     # Google OAuth
     GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
     GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
-    CORS_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000').split(',') if origin.strip()]
+    CORS_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,https://talent-agent-ai.vercel.app').split(',') if origin.strip()]
 
     # SMTP / Email Configuration
     MAIL_SERVER = os.getenv('SMTP_HOST', os.getenv('MAIL_SERVER', os.getenv('EMAIL_HOST', 'smtp.gmail.com')))

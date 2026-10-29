@@ -2,7 +2,7 @@ import os
 import secrets
 import logging
 from datetime import datetime, timedelta
-from flask import Blueprint, request, jsonify, make_response
+from flask import Blueprint, request, jsonify, make_response, redirect
 from config import Config
 from database import execute_query
 from services.auth_service import (
@@ -482,13 +482,29 @@ def admin_login():
     return resp, 200
 
 @auth_bp.route('/google', methods=['POST'])
+@auth_bp.route('/google/callback', methods=['GET', 'POST'])
 def google_auth():
     """
     Verifies Google Identity Services ID Token (JWT) credential and logs in / registers candidate.
     Validates token signature, issuer, audience (GOOGLE_CLIENT_ID), expiration, and email_verified.
+    Supports both JSON POST payloads (/google) and redirect/form callbacks (/google/callback).
     """
-    data = request.get_json() or {}
-    credential = data.get('credential') or data.get('id_token')
+    data = request.get_json(silent=True) or {}
+    credential = (
+        data.get('credential') or
+        data.get('id_token') or
+        request.form.get('credential') or
+        request.form.get('id_token') or
+        request.args.get('credential') or
+        request.args.get('id_token')
+    )
+
+    frontend_url = os.getenv('FRONTEND_URL') or ('https://talent-agent-ai.vercel.app' if Config.ENV == 'production' else 'http://localhost:5173')
+
+    # If accessed via GET without credential token (e.g. manual navigation or empty callback), redirect to frontend login
+    if request.method == 'GET' and not credential:
+        logger.info("Google Auth GET callback reached without direct credential token. Redirecting to frontend login.")
+        return redirect(f"{frontend_url}/login")
 
     configured_client_id = Config.GOOGLE_CLIENT_ID or os.getenv('GOOGLE_CLIENT_ID', '')
     is_client_id_configured = bool(configured_client_id)
@@ -668,6 +684,12 @@ def google_auth():
     user_data['profile_completion'] = profile_status['profile_completion']
 
     redirect_url = '/dashboard' if profile_status['profile_complete'] else '/profile/setup'
+
+    # If request was a browser navigation / form-post callback rather than JSON fetch, redirect to frontend
+    if not request.is_json and (request.form.get('credential') or request.args.get('credential')):
+        resp = make_response(redirect(f"{frontend_url}{redirect_url}"))
+        resp.set_cookie('talent_agent_token', token, httponly=True, samesite='Lax', secure=Config.COOKIE_SECURE, max_age=7 * 24 * 3600)
+        return resp
 
     resp = make_response(jsonify({
         'success': True,

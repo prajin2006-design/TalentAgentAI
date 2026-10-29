@@ -171,5 +171,30 @@ class TestGoogleAuthFlow(unittest.TestCase):
             self.assertFalse(data['success'])
             self.assertIn('Invalid issuer', data['error'])
 
+    def test_google_callback_get_without_credential(self):
+        resp = self.client.get('/api/auth/google/callback')
+        # Should redirect to frontend login without returning 404
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn('/login', resp.headers['Location'])
+
+    def test_google_callback_post_with_credential(self):
+        from unittest.mock import patch
+        mock_idinfo = {
+            'iss': 'https://accounts.google.com',
+            'sub': 'callback_test_sub',
+            'email': 'callback_test@gmail.com',
+            'email_verified': True,
+            'name': 'Callback Candidate',
+            'aud': '231069201439-nn48c3s4vn08vrl3ih4l8t8tjgqf8hl4.apps.googleusercontent.com',
+            'exp': 1800000000
+        }
+        with patch('google.oauth2.id_token.verify_oauth2_token', return_value=mock_idinfo), \
+             patch('routes.auth_routes.send_login_security_alert', return_value=True):
+            resp = self.client.post('/api/auth/google/callback', json={'credential': 'valid_mock_jwt'})
+            self.assertEqual(resp.status_code, 200)
+            data = json.loads(resp.data)
+            self.assertTrue(data['success'])
+            self.assertEqual(data['user']['email'], 'callback_test@gmail.com')
+
 if __name__ == '__main__':
     unittest.main()
