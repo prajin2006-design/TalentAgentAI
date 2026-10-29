@@ -378,22 +378,17 @@
   color: var(--color-primary, #111111);
 }
 
-/* Transparent overlay to catch native GIS clicks seamlessly */
-.google-gis-hidden-overlay {
-  position: absolute;
-  inset: 0;
-  opacity: 0.0001;
-  z-index: 5;
-  overflow: hidden;
-  border-radius: 9999px;
-  cursor: pointer;
-  pointer-events: auto;
+/* Native Google Identity Services Button Container */
+.google-gis-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 44px;
 }
 
-.google-gis-hidden-overlay iframe {
-  width: 100% !important;
-  height: 100% !important;
-  cursor: pointer !important;
+.google-gis-container iframe {
+  margin: 0 auto !important;
 }
 
 /* ==================================================
