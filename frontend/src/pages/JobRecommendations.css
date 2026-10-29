@@ -1,19 +1,28 @@
+/* ==========================================================================
+   Talent Agent AI — Job Recommendations Styling
+   Reference: Proofmode Bold Editorial Aesthetic
+   Palette: Ice White (60%) · Soft Black (30%) · Electric Orange (10%)
+   ========================================================================== */
+
 .recommendations-wrapper {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  max-width: 1240px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .rec-banner-card {
-  padding: 2rem;
-  background-color: #FFFFFF;
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
+  padding: 2.25rem 2.5rem;
+  background-color: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #E5E2DA);
+  border-radius: var(--radius-card, 28px);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(17, 17, 17, 0.04));
 }
 
 .rec-header-content {
@@ -24,20 +33,26 @@
 }
 
 .banner-heading {
-  font-size: 1.8rem;
-  color: var(--primary);
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 1.75rem;
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  color: var(--color-text, #111111);
+  margin: 0;
 }
 
 .banner-sub {
   font-size: 0.95rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary, #77756F);
+  line-height: 1.6;
+  margin: 0;
 }
 
 .match-slider-box {
-  background-color: #F8F8FC;
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 1.25rem 1.5rem;
+  background-color: var(--color-surface-subtle, #EFEEE8);
+  border: 1px solid var(--color-border, #E5E2DA);
+  border-radius: var(--radius-card, 20px);
+  padding: 1.5rem 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
@@ -47,29 +62,35 @@
 .slider-label-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 0.85rem;
-  font-family: var(--font-heading);
+  font-family: var(--font-display, 'Manrope', sans-serif);
 }
 
 .slider-title {
-  color: var(--text-muted);
+  color: var(--color-text-secondary, #77756F);
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.75rem;
 }
 
 .slider-value {
-  font-weight: 700;
-  color: var(--primary);
+  font-weight: 850;
+  font-size: 1.1rem;
+  color: var(--color-text, #111111);
 }
 
 .match-range-slider {
   width: 100%;
-  accent-color: var(--primary);
+  accent-color: var(--color-electric-orange, #FF6500);
   cursor: pointer;
 }
 
 .recommendations-list-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 @media (max-width: 992px) {

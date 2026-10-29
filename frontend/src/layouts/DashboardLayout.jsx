@@ -12,7 +12,11 @@ import {
   Cpu, 
   Briefcase, 
   Settings, 
-  ArrowRight 
+  ArrowRight,
+  Bell,
+  Plus,
+  Menu,
+  X
 } from 'lucide-react';
 import { useCareer } from '../context/CareerContext';
 import { useAuth } from '../context/AuthContext';
@@ -75,6 +79,7 @@ export const DashboardLayout = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const searchContainerRef = useRef(null);
 
   // Fetch jobs data on mount for searching
@@ -251,24 +256,40 @@ export const DashboardLayout = () => {
     setSelectedIndex(-1);
   };
 
+  const getBreadcrumb = (path) => {
+    const today = new Date();
+    const weekday = today.toLocaleDateString('en-US', { weekday: 'long' });
+    const monthDay = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toLowerCase();
+    const pageName = getPageTitle(path);
+    return `/ ${pageName} · ${weekday}, ${monthDay}`;
+  };
+
   return (
     <ErrorBoundary>
       <div className="dashboard-layout-wrapper">
-        <Sidebar />
+        <Sidebar isOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
         <div className="dashboard-main-area">
           {/* Top Header Navigation matching Reference UI */}
           <header className="dashboard-top-nav">
             <div className="top-nav-left">
-              <h1 className="page-header-title">{getPageTitle(location.pathname)}</h1>
+              <button
+                type="button"
+                className="btn-mobile-nav-toggle"
+                onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                aria-label="Toggle Navigation"
+              >
+                {mobileSidebarOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
+              <span className="top-nav-breadcrumb">{getBreadcrumb(location.pathname)}</span>
             </div>
 
             <div className="top-nav-right">
-              {/* Search Bar container with dropdown */}
+              {/* Search Bar pill with shortcut badge */}
               <div className="search-bar-box" ref={searchContainerRef}>
-                <Search size={15} className="search-icon" />
+                <Search size={14} className="search-icon" />
                 <input
                   type="text"
-                  placeholder="Search jobs, skills, tools..."
+                  placeholder="Search anything..."
                   className="top-search-input"
                   value={searchQuery}
                   onChange={(e) => {
@@ -279,6 +300,7 @@ export const DashboardLayout = () => {
                   onFocus={() => setIsDropdownOpen(true)}
                   onKeyDown={handleKeyDown}
                 />
+                <span className="search-keycap-pill">⌘K</span>
                 
                 {/* Real-time drop-down search list */}
                 {isDropdownOpen && (
@@ -314,23 +336,25 @@ export const DashboardLayout = () => {
                 )}
               </div>
 
-              {/* Readiness Score Badge */}
-              <div className="readiness-pill-badge">
-                <Sparkles size={13} className="pill-sparkle" />
-                <span className="pill-label">Readiness:</span>
-                <span className="pill-score">{normalizeReadiness(profileScore)}%</span>
-              </div>
+              {/* Notification Bell */}
+              <button className="top-nav-bell-btn" title="Notifications" aria-label="Notifications">
+                <Bell size={16} />
+                <span className="bell-alert-dot" />
+              </button>
 
-              {/* User Account Quick Link */}
-              <Link to="/profile" className="top-user-chip" title="View Profile">
-                <div className="top-avatar-wrap">
-                  {avatarImage ? (
-                    <img src={avatarImage} alt={displayName} className="top-avatar-photo" />
-                  ) : (
-                    <span className="top-avatar-text">{avatarInitials}</span>
-                  )}
-                </div>
-                <span className="top-user-name">{displayName}</span>
+              {/* 30% Soft Black "+ New goal" CTA Button */}
+              <Link to="/resume-maker" className="btn-top-new-goal">
+                <Plus size={14} />
+                <span>New goal</span>
+              </Link>
+
+              {/* User Account Avatar Circle */}
+              <Link to="/profile" className="top-user-avatar-circle" title={displayName}>
+                {avatarImage ? (
+                  <img src={avatarImage} alt={displayName} className="top-avatar-img" />
+                ) : (
+                  <span className="top-avatar-initials">{avatarInitials}</span>
+                )}
               </Link>
             </div>
           </header>

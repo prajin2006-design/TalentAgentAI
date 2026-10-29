@@ -219,7 +219,7 @@ export const ChatMessage = ({ message = {}, onRegenerate }) => {
       <div className="avatar-box">
         {isAI ? (
           <div className="ai-avatar" title="Talent Agent AI">
-            <Sparkles size={16} />
+            <img src="/logo.png" alt="Talent Agent AI" className="ai-avatar-logo" />
           </div>
         ) : (
           <div className="user-avatar" title="You">

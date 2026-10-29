@@ -30,7 +30,8 @@ def get_db_connection():
                 database=Config.DB_NAME,
                 cursorclass=pymysql.cursors.DictCursor,
                 autocommit=False,
-                charset='utf8mb4'
+                charset='utf8mb4',
+                init_command="SET time_zone = '+00:00'"
             )
             return conn
         except Exception as e:

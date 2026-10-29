@@ -411,7 +411,7 @@ export const AdminDashboard = () => {
       {/* ==================== ADMIN SIDEBAR ==================== */}
       <aside className="admin-sidebar">
         <a href="/admin" className="sidebar-logo">
-          <span className="logo-dot" />
+          <img src="/logo.png" alt="Talent Agent AI" className="sidebar-logo-image" />
           <span className="logo-text">CONTROL ROOM</span>
         </a>
 

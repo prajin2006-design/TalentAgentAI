@@ -155,7 +155,7 @@ export const Home = () => {
         <div className="landing-container">
           <div className="section-header-centered">
             <div className="section-tag-pill">
-              <Sparkles size={13} className="text-lavender" />
+              <Sparkles size={13} className="text-orange" />
               <span>THE OLD WAY VS. TALENT AGENT AI</span>
             </div>
             <h2 className="section-primary-heading">
@@ -270,7 +270,7 @@ export const Home = () => {
         <div className="landing-container">
           <div className="section-header-centered">
             <div className="section-tag-pill">
-              <Sparkles size={13} className="text-lavender" />
+              <Sparkles size={13} className="text-orange" />
               <span>CORE CAPABILITIES</span>
             </div>
             <h2 className="section-primary-heading">
@@ -400,7 +400,7 @@ export const Home = () => {
         <div className="landing-container">
           <div className="section-header-centered">
             <div className="section-tag-pill">
-              <Sparkles size={13} className="text-lavender" />
+              <Sparkles size={13} className="text-orange" />
               <span>THE 4-STEP WORKFLOW</span>
             </div>
             <h2 className="section-primary-heading">
@@ -466,17 +466,17 @@ export const Home = () => {
       {/* ========================================================================= */}
       {/* 7. AI INSIGHT SECTION (Split Section) */}
       {/* ========================================================================= */}
-      <section id="job-intelligence" className="ai-insight-split-section">
+      <section id="role-calibration" className="ai-insight-split-section">
         <div className="landing-container ai-insight-grid">
           {/* Left Column: Heading & Role Selector */}
           <div className="ai-insight-left">
             <div className="section-tag-pill">
-              <Sparkles size={13} className="text-lavender" />
-              <span>REAL-TIME CALIBRATION</span>
+              <Sparkles size={13} className="text-lime-contrast" />
+              <span className="font-mono">REAL-TIME_ROLE_CALIBRATION</span>
             </div>
             <h2 className="ai-insight-main-heading">
               Know where you fit.<br />
-              <span className="hero-lavender-accent">Know what's missing.</span>
+              <span className="hero-accent-orange">Know what's missing.</span>
             </h2>
             <p className="ai-insight-lead">
               Stop guessing why you aren't hearing back from recruiters. Our AI breaks down your profile against live role benchmarks so you know exactly what hiring teams see.
@@ -556,7 +556,7 @@ export const Home = () => {
               {/* Next Best Move Highlight Box */}
               <div className="calibration-next-move-card">
                 <div className="next-move-tag-row">
-                  <Sparkles size={13} className="text-lavender" />
+                  <Sparkles size={13} className="text-orange" />
                   <span className="next-move-title">NEXT BEST MOVE</span>
                 </div>
                 <p className="next-move-content">
@@ -582,7 +582,7 @@ export const Home = () => {
         <div className="landing-container">
           <div className="section-header-centered">
             <div className="section-tag-pill">
-              <GraduationCap size={13} className="text-lavender" />
+              <GraduationCap size={13} className="text-orange" />
               <span>WHO IT'S FOR</span>
             </div>
             <h2 className="section-primary-heading">
@@ -637,7 +637,7 @@ export const Home = () => {
         <div className="landing-container">
           <div className="section-header-centered">
             <div className="section-tag-pill">
-              <MessageSquareCode size={13} className="text-lavender" />
+              <MessageSquareCode size={13} className="text-orange" />
               <span>AI CAREER ASSISTANT</span>
             </div>
             <h2 className="section-primary-heading">
@@ -704,8 +704,6 @@ export const Home = () => {
       <section className="final-cta-section">
         <div className="landing-container">
           <div className="cta-dark-banner">
-            <div className="cta-lavender-glow-ambient" />
-
             <div className="cta-banner-content">
               <div className="cta-eyebrow-chip">
                 <Sparkles size={13} className="text-lime" />
@@ -747,9 +745,7 @@ export const Home = () => {
           {/* Brand Column */}
           <div className="footer-brand-column">
             <div className="footer-brand-header">
-              <div className="brand-logo-mark">
-                <Sparkles size={16} className="brand-sparkle-icon" />
-              </div>
+              <img src="/logo.png" alt="Talent Agent AI" className="brand-logo-image footer-logo-image" />
               <span className="brand-text">
                 Talent Agent <span className="brand-ai-badge">AI</span>
               </span>
@@ -812,9 +808,6 @@ export const Home = () => {
           </div>
         </div>
       </footer>
-
-      {/* Outer Footer Textured Royal-Indigo Blue Surround Band */}
-      <div className="footer-textured-blue-surround" aria-hidden="true" />
     </div>
   );
 };

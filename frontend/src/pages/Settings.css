@@ -1,11 +1,13 @@
 /* ==========================================================================
    Talent Agent AI — Settings Page Styling
+   Reference: Proofmode Bold Editorial Aesthetic
+   Palette: Ice White (60%) · Soft Black (30%) · Electric Orange (10%)
    ========================================================================== */
 
 .settings-page-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.75rem;
   padding: 0;
   max-width: 1100px;
   margin: 0 auto;
@@ -19,16 +21,17 @@
 }
 
 .settings-main-heading {
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 1.65rem;
+  font-weight: 850;
   color: var(--color-text, #111111);
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.35rem 0;
   letter-spacing: -0.025em;
 }
 
 .settings-sub-text {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary, #667085);
+  font-size: 0.92rem;
+  color: var(--color-text-secondary, #77756F);
   margin: 0;
 }
 
@@ -36,139 +39,143 @@
 .settings-tabs-bar {
   display: flex;
   gap: 0.5rem;
-  border-bottom: 1px solid var(--color-border, #E7EAF0);
-  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border, #E5E2DA);
+  padding-bottom: 0.65rem;
   overflow-x: auto;
 }
 
 .settings-tab-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.55rem 1rem;
-  border-radius: var(--radius-sm, 8px);
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-pill, 9999px);
   background: transparent;
-  border: none;
-  color: var(--color-text-secondary, #667085);
-  font-size: 0.85rem;
-  font-weight: 600;
+  border: 1px solid transparent;
+  color: var(--color-text-secondary, #77756F);
+  font-size: 0.875rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-fast, 150ms ease);
   white-space: nowrap;
 }
 
 .settings-tab-btn:hover {
   color: var(--color-text, #111111);
-  background-color: var(--color-surface-hover, #F8FAFC);
+  background-color: var(--color-surface-hover, #ECEAE3);
 }
 
 .settings-tab-btn.active {
-  background-color: var(--color-primary-subtle, #EEF2FF);
-  color: var(--color-primary, #2F46FF);
-  font-weight: 700;
+  background-color: var(--color-text, #111111);
+  color: #FFFFFF;
+  border-color: var(--color-text, #111111);
+  font-weight: 750;
 }
 
 /* Form Card */
 .settings-form-card {
-  padding: 2rem;
+  padding: 2.25rem;
   background-color: var(--color-surface, #FFFFFF);
-  border: 1px solid var(--color-border, #E7EAF0);
-  border-radius: var(--radius-card, 16px);
+  border: 1px solid var(--color-border, #E5E2DA);
+  border-radius: var(--radius-card, 28px);
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
-  box-shadow: var(--shadow-xs);
+  gap: 2rem;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(17, 17, 17, 0.04));
 }
 
 .save-success-banner {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  background: var(--color-success-subtle, #ECFDF3);
-  border: 1px solid var(--color-success-border, #A6F4C5);
-  color: var(--color-success, #16A36A);
-  border-radius: var(--radius-md, 10px);
-  font-size: 0.85rem;
-  font-weight: 600;
+  gap: 0.55rem;
+  padding: 0.85rem 1.35rem;
+  background: var(--color-success-subtle, #F0FDF4);
+  border: 1px solid var(--color-success-border, #BBF7D0);
+  color: var(--color-success, #15803D);
+  border-radius: var(--radius-md, 14px);
+  font-size: 0.88rem;
+  font-weight: 700;
 }
 
 .save-error-banner {
-  padding: 0.75rem 1.25rem;
+  padding: 0.85rem 1.35rem;
   background: var(--color-error-subtle, #FEF2F2);
   border: 1px solid var(--color-error-border, #FECACA);
-  color: var(--color-error, #EF4444);
-  border-radius: var(--radius-md, 10px);
-  font-size: 0.85rem;
+  color: var(--color-error, #DC2626);
+  border-radius: var(--radius-md, 14px);
+  font-size: 0.88rem;
+  font-weight: 600;
 }
 
 .settings-section-pane {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 .pane-header {
-  border-bottom: 1px solid var(--color-border-subtle, #F0F2F6);
-  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border-subtle, #EFECE6);
+  padding-bottom: 0.85rem;
 }
 
 .pane-title {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 1.25rem;
+  font-weight: 850;
   color: var(--color-text, #111111);
-  margin: 0 0 0.2rem 0;
+  margin: 0 0 0.25rem 0;
+  letter-spacing: -0.02em;
 }
 
 .pane-sub {
-  font-size: 0.8rem;
-  color: var(--color-text-secondary, #667085);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #77756F);
   margin: 0;
 }
 
 .form-grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.45rem;
 }
 
 .settings-toggle-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--color-border-subtle, #F0F2F6);
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--color-border-subtle, #EFECE6);
 }
 
 .toggle-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .toggle-title {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.92rem;
+  font-weight: 700;
   color: var(--color-text, #111111);
 }
 
 .toggle-desc {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary, #667085);
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #77756F);
 }
 
 .form-actions-bottom {
   display: flex;
   justify-content: flex-end;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-border-subtle, #F0F2F6);
+  gap: 0.85rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border-subtle, #EFECE6);
 }
 
 /* Responsiveness */

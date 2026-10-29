@@ -23,9 +23,7 @@ export const Register = () => {
       <div className="auth-container">
         {/* Logo Brand Header */}
         <Link to="/" className="auth-brand-logo">
-          <div className="logo-icon-box">
-            <Sparkles size={20} className="text-accent" />
-          </div>
+          <img src="/logo.png" alt="Talent Agent AI" className="auth-brand-logo-img" />
           <span className="logo-text">
             TALENT AGENT <span className="logo-highlight">AI</span>
           </span>

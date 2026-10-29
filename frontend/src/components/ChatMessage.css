@@ -35,12 +35,20 @@
   height: 32px;
   border-radius: 10px;
   background: #111111;
-  color: #B8FF22;
+  color: #FF6500;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(184, 255, 34, 0.3);
+  border: 1px solid rgba(255, 101, 0, 0.25);
+  overflow: hidden;
+}
+
+.ai-avatar-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .user-avatar {
@@ -109,10 +117,11 @@
 .chat-message-row.ai .message-bubble {
   background-color: #FFFFFF;
   color: #111111;
-  padding: 1.15rem 1.35rem;
+  padding: 1.25rem 1.45rem;
+  border-radius: 20px;
   border-top-left-radius: 4px;
-  border: 1px solid #EBEBE5;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  border: 1px solid #E5E2DA;
+  box-shadow: 0 4px 16px rgba(17, 17, 17, 0.03);
 }
 
 .ai-markdown-content {
@@ -191,7 +200,7 @@
   margin: 0.85rem 0;
   background: #FFFFFF;
   border: 1px solid #E4E4DC;
-  border-left: 4px solid #B8FF22;
+  border-left: 4px solid #FF6500;
   border-radius: 12px;
   padding: 0.85rem 1rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);

@@ -88,7 +88,7 @@ def verify_otp_hash(otp: str, email: str, stored_hash: str) -> bool:
 def check_resend_cooldown(email: str, purpose: str = 'email_verification') -> tuple[bool, int]:
     """
     Checks if a resend request for this email occurred within the 45-second cooldown window.
-    Returns (is_in_cooldown, seconds_remaining).
+    Returns (is_in_cooldown: bool, seconds_remaining: int).
     """
     from database import execute_query
     record = execute_query(
@@ -105,21 +105,40 @@ def check_resend_cooldown(email: str, purpose: str = 'email_verification') -> tu
     if not record or not record.get('created_at'):
         return False, 0
 
-    created_at_str = str(record['created_at'])
-    try:
-        if '.' in created_at_str:
-            created_at = datetime.strptime(created_at_str.split('.')[0], '%Y-%m-%d %H:%M:%S')
-        else:
-            created_at = datetime.strptime(created_at_str, '%Y-%m-%d %H:%M:%S')
-    except Exception:
+    created_at_val = record['created_at']
+    if isinstance(created_at_val, str):
+        try:
+            if '.' in created_at_val:
+                created_at = datetime.strptime(created_at_val.split('.')[0], '%Y-%m-%d %H:%M:%S')
+            else:
+                created_at = datetime.strptime(created_at_val, '%Y-%m-%d %H:%M:%S')
+        except Exception:
+            return False, 0
+    elif isinstance(created_at_val, datetime):
+        created_at = created_at_val
+    else:
         return False, 0
 
-    elapsed = (datetime.utcnow() - created_at).total_seconds()
-    cooldown_period = 45 # 45 seconds development cooldown
+    cooldown_period = 45 # 45 seconds cooldown
+    now_utc = datetime.utcnow()
+    now_local = datetime.now()
 
+    # Calculate elapsed under both UTC and local interpretations to prevent timezone lockouts
+    diff_utc = (now_utc - created_at).total_seconds()
+    diff_local = (now_local - created_at).total_seconds()
+
+    # Pick the realistic elapsed time that is non-negative
+    candidates = [d for d in (diff_utc, diff_local) if d >= 0]
+    if not candidates:
+        # If both are negative due to clock skew or future timestamp, don't lock out
+        return False, 0
+
+    elapsed = min(candidates)
     if elapsed < cooldown_period:
         remaining = int(cooldown_period - elapsed)
-        return True, max(1, remaining)
+        # Cap remaining to cooldown_period (45) to prevent any abnormal huge values
+        remaining = min(max(1, remaining), cooldown_period)
+        return True, remaining
 
     return False, 0
 

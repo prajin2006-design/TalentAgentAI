@@ -1,10 +1,16 @@
+/* ==========================================================================
+   Talent Agent AI — Job Detail Page Styling
+   Reference: Proofmode Bold Editorial Aesthetic
+   Palette: Ice White (60%) · Soft Black (30%) · Electric Orange (10%)
+   ========================================================================== */
+
 .job-detail-page-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  max-width: 1200px;
+  gap: 1.75rem;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 1.5rem 2rem 3rem;
+  padding: 1.5rem 2rem 3.5rem;
 }
 
 .breadcrumb-bar {
@@ -15,42 +21,44 @@
 .back-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   font-size: 0.85rem;
-  font-weight: 600;
-  color: #64748B;
-  transition: color 0.2s;
+  font-weight: 700;
+  color: var(--color-text-secondary, #77756F);
+  transition: color var(--transition-fast, 150ms ease);
+  text-decoration: none;
 }
 
 .back-link:hover {
-  color: #111111;
+  color: var(--color-text, #111111);
 }
 
 .job-hero-card {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  border-radius: 16px;
-  padding: 2rem;
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #E5E2DA);
+  border-radius: var(--radius-card, 28px);
+  padding: 2.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1.5rem;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  gap: 1.75rem;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(17, 17, 17, 0.04));
 }
 
 .job-hero-main {
   display: flex;
   align-items: flex-start;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .job-brand-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
-  background: #FAF8FF;
-  color: #7765FF;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-md, 16px);
+  background: var(--color-orange-subtle, #FFF4ED);
+  border: 1px solid var(--color-orange-border, #FFD4BC);
+  color: var(--color-electric-orange, #FF6500);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -60,7 +68,7 @@
 .job-title-stack {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.45rem;
 }
 
 .job-badge-row {
@@ -71,93 +79,106 @@
 
 .job-type-pill {
   font-size: 0.75rem;
-  font-weight: 600;
-  color: #475569;
-  background: #F1F5F9;
-  padding: 0.2rem 0.6rem;
-  border-radius: 6px;
+  font-weight: 700;
+  color: var(--color-text-secondary, #77756F);
+  background: var(--color-surface-subtle, #EFEEE8);
+  border: 1px solid var(--color-border, #E5E2DA);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill, 9999px);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .job-main-title {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #0F172A;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 1.65rem;
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  color: var(--color-text, #111111);
 }
 
 .job-meta-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
   font-size: 0.9rem;
-  color: #64748B;
+  color: var(--color-text-secondary, #77756F);
 }
 
 .job-meta-row .company-text {
-  font-weight: 600;
-  color: #1E293B;
+  font-weight: 700;
+  color: var(--color-text, #111111);
 }
 
-.job-meta-row .location-text,
 .job-meta-row .salary-text {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-}
-
-.job-meta-row .salary-text {
-  color: #059669;
-  font-weight: 600;
+  gap: 0.25rem;
+  color: var(--color-success, #15803D);
+  font-weight: 700;
 }
 
 .job-hero-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .btn-save.saved {
-  color: #7765FF;
-  border-color: #7765FF;
-  background: rgba(119, 101, 255, 0.06);
+  color: var(--color-electric-orange, #FF6500);
+  border-color: var(--color-electric-orange, #FF6500);
+  background: var(--color-orange-subtle, #FFF4ED);
 }
 
 .btn-apply {
-  padding: 0.75rem 1.5rem;
-  font-weight: 700;
+  padding: 0.85rem 1.75rem;
+  font-weight: 750;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  background: var(--color-text, #111111);
+  color: #FFFFFF;
+  border-radius: var(--radius-pill, 9999px);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.btn-apply:hover {
+  background: var(--color-electric-orange, #FF6500);
+  transform: translateY(-1px);
 }
 
 .applied-pill-tag {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  background: #ECFDF5;
-  color: #059669;
-  border: 1px solid #A7F3D0;
-  padding: 0.65rem 1.25rem;
-  border-radius: 8px;
-  font-weight: 700;
+  gap: 0.45rem;
+  background: var(--color-success-subtle, #F0FDF4);
+  color: var(--color-success, #15803D);
+  border: 1px solid var(--color-success-border, #BBF7D0);
+  padding: 0.75rem 1.35rem;
+  border-radius: var(--radius-pill, 9999px);
+  font-weight: 750;
   font-size: 0.9rem;
 }
 
 .alert-success-box {
-  background: #ECFDF5;
-  border: 1px solid #10B981;
-  color: #065F46;
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
+  background: var(--color-success-subtle, #F0FDF4);
+  border: 1px solid var(--color-success-border, #BBF7D0);
+  color: var(--color-success, #15803D);
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-md, 16px);
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
+  font-weight: 600;
 }
 
 .job-detail-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 @media (max-width: 900px) {
@@ -167,23 +188,29 @@
 }
 
 .job-content-col {
-  padding: 2rem;
+  padding: 2.25rem;
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #E5E2DA);
+  border-radius: var(--radius-card, 28px);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(17, 17, 17, 0.04));
   display: flex;
   flex-direction: column;
   gap: 2rem;
 }
 
 .detail-section h2 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #0F172A;
-  margin-bottom: 0.75rem;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 1.25rem;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  color: var(--color-text, #111111);
+  margin-bottom: 0.85rem;
 }
 
 .job-desc-text {
   font-size: 0.95rem;
-  line-height: 1.6;
-  color: #334155;
+  line-height: 1.65;
+  color: var(--color-text, #111111);
   white-space: pre-line;
 }
 
@@ -194,165 +221,192 @@
 }
 
 .skill-pill-tag {
-  padding: 0.4rem 0.8rem;
-  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-pill, 9999px);
   font-size: 0.825rem;
-  font-weight: 600;
+  font-weight: 650;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
 }
 
 .skill-pill-tag.matched {
-  background: #F0FDF4;
-  color: #166534;
-  border: 1px solid #BBF7D0;
+  background: var(--color-success-subtle, #F0FDF4);
+  color: var(--color-success, #15803D);
+  border: 1px solid var(--color-success-border, #BBF7D0);
 }
 
 .skill-pill-tag.standard {
-  background: #F1F5F9;
-  color: #475569;
-  border: 1px solid #E2E8F0;
+  background: var(--color-surface-subtle, #EFEEE8);
+  color: var(--color-text-secondary, #77756F);
+  border: 1px solid var(--color-border, #E5E2DA);
 }
 
 .interview-cta-box {
-  background: #FAF8FF;
-  border: 1px solid #E5DEFF;
-  border-radius: 12px;
-  padding: 1.5rem;
+  background: var(--color-orange-subtle, #FFF4ED);
+  border: 1px solid var(--color-orange-border, #FFD4BC);
+  border-radius: var(--radius-card, 24px);
+  padding: 1.75rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .interview-cta-info h3 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #111111;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 1.1rem;
+  font-weight: 850;
+  color: var(--color-text, #111111);
   margin-bottom: 0.25rem;
 }
 
 .interview-cta-info p {
-  font-size: 0.85rem;
-  color: #475569;
+  font-size: 0.88rem;
+  color: var(--color-text-secondary, #77756F);
 }
 
 .job-sidebar-col {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 .match-matrix-card {
-  padding: 1.75rem;
+  padding: 2rem;
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #E5E2DA);
+  border-radius: var(--radius-card, 28px);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(17, 17, 17, 0.04));
 }
 
 .matrix-badge-header {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   font-size: 0.75rem;
-  font-weight: 700;
-  color: #7765FF;
-  margin-bottom: 1rem;
+  font-weight: 800;
+  color: var(--color-electric-orange, #FF6500);
+  background: var(--color-orange-subtle, #FFF4ED);
+  border: 1px solid var(--color-orange-border, #FFD4BC);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill, 9999px);
+  margin-bottom: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .match-radial-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.25rem;
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  border-radius: 12px;
-  margin-bottom: 1.25rem;
+  padding: 1.5rem;
+  background: var(--color-surface-subtle, #EFEEE8);
+  border: 1px solid var(--color-border, #E5E2DA);
+  border-radius: var(--radius-md, 16px);
+  margin-bottom: 1.5rem;
 }
 
 .match-score-number {
-  font-size: 2.25rem;
-  font-weight: 800;
-  color: #111111;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--color-text, #111111);
 }
 
 .match-status-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #64748B;
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: var(--color-text-secondary, #77756F);
 }
 
 .why-recommended-box {
-  font-size: 0.85rem;
-  font-style: italic;
-  color: #475569;
-  background: #FFFBEB;
-  border: 1px solid #FDE68A;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.25rem;
+  font-size: 0.88rem;
+  color: var(--color-text, #111111);
+  background: var(--color-warning-subtle, #FFFBEB);
+  border: 1px solid var(--color-warning-border, #FDE68A);
+  padding: 0.9rem 1.15rem;
+  border-radius: var(--radius-md, 14px);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
 }
 
 .skills-breakdown-box {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .skills-breakdown-box h4 {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #0F172A;
-  margin-bottom: 0.5rem;
+  gap: 0.45rem;
+  font-size: 0.825rem;
+  font-weight: 800;
+  color: var(--color-text, #111111);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.65rem;
 }
 
 .matrix-tags-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: 0.45rem;
 }
 
 .resume-sync-card {
-  padding: 1.5rem;
+  padding: 1.75rem;
+  background: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #E5E2DA);
+  border-radius: var(--radius-card, 28px);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(17, 17, 17, 0.04));
 }
 
 .sync-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
 }
 
 .sync-header h4 {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #0F172A;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-text, #111111);
 }
 
 .resume-name {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #334155;
-  margin-bottom: 0.25rem;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: var(--color-text, #111111);
+  margin-bottom: 0.35rem;
 }
 
 .ats-score-tag {
   font-size: 0.75rem;
-  font-weight: 700;
-  color: #10B981;
-  background: #ECFDF5;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
+  font-weight: 750;
+  color: var(--color-success, #15803D);
+  background: var(--color-success-subtle, #F0FDF4);
+  border: 1px solid var(--color-success-border, #BBF7D0);
+  padding: 3px 9px;
+  border-radius: var(--radius-pill, 9999px);
   display: inline-block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.65rem;
 }
 
 .sync-link {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #7765FF;
+  display: inline-block;
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: var(--color-electric-orange, #FF6500);
+  text-decoration: none;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.sync-link:hover {
+  color: var(--color-orange-hover, #E65A00);
+  text-decoration: underline;
 }
 
 .job-detail-skeleton {

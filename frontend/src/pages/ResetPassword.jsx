@@ -24,7 +24,7 @@ export const ResetPassword = () => {
         <div className="auth-card-wrapper">
           <div className="auth-brand-stack text-center">
             <Link to="/" className="auth-brand-logo">
-              <span className="logo-dot" />
+              <img src="/logo.png" alt="Talent Agent AI" className="auth-brand-logo-img" />
               <span className="logo-text">TALENT AGENT <span className="text-electric-blue">AI</span></span>
             </Link>
             <h1 className="auth-heading">Invalid Reset Session</h1>
@@ -96,7 +96,7 @@ export const ResetPassword = () => {
       <div className="auth-card-wrapper">
         <div className="auth-brand-stack text-center">
           <Link to="/" className="auth-brand-logo">
-            <span className="logo-dot" />
+            <img src="/logo.png" alt="Talent Agent AI" className="auth-brand-logo-img" />
             <span className="logo-text">TALENT AGENT <span className="text-electric-blue">AI</span></span>
           </Link>
           <h1 className="auth-heading">Set new password</h1>

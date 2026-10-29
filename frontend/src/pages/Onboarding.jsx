@@ -81,7 +81,7 @@ export const Onboarding = () => {
         {/* Brand Header */}
         <div className="onboarding-header">
           <div className="brand-logo">
-            <Sparkles size={20} className="text-accent" />
+            <img src="/logo.png" alt="Talent Agent AI" className="onboarding-logo-img" />
             <span className="logo-text">
               TALENT AGENT <span className="logo-highlight">AI</span>
             </span>
@@ -339,3 +339,5 @@ export const Onboarding = () => {
     </div>
   );
 };
+
+export default Onboarding;

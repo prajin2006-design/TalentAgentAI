@@ -1,58 +1,77 @@
+/* ==========================================================================
+   Talent Agent AI — Interactive Career Path Roadmap
+   Reference: Proofmode Bold Editorial Aesthetic
+   Palette: Ice White (60%) · Soft Black (30%) · Electric Orange (10%)
+   ========================================================================== */
+
 .career-path-wrapper {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  max-width: 1240px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .roadmap-banner-card {
-  padding: 2.25rem;
-  background-color: #FFFFFF;
-  border-radius: 20px;
+  padding: 2.25rem 2.5rem;
+  background-color: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #E5E2DA);
+  border-radius: var(--radius-card, 28px);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: var(--shadow-subtle);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(17, 17, 17, 0.04));
+  flex-wrap: wrap;
+  gap: 1.5rem;
 }
 
 .roadmap-current-badge {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 1.25rem;
-  background-color: var(--primary-subtle);
-  border-radius: 14px;
+  gap: 0.85rem;
+  padding: 0.85rem 1.5rem;
+  background-color: var(--color-orange-subtle, #FFF4ED);
+  border: 1px solid var(--color-orange-border, #FFD4BC);
+  border-radius: var(--radius-pill, 9999px);
 }
 
 .current-label {
   display: block;
-  font-family: var(--font-heading);
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--primary);
-  letter-spacing: 0.05em;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--color-electric-orange, #FF6500);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .current-val {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: var(--primary);
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-weight: 850;
+  font-size: 1rem;
+  color: var(--color-text, #111111);
 }
 
 .roadmap-main-grid {
   display: grid;
   grid-template-columns: 1.3fr 0.7fr;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 .nodes-timeline-col {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .node-card-interactive-wrapper {
   cursor: pointer;
+  transition: transform var(--transition-fast, 150ms ease);
+}
+
+.node-card-interactive-wrapper:hover {
+  transform: translateY(-2px);
 }
 
 .node-inspector-col {
@@ -61,97 +80,109 @@
 
 .sticky-inspector {
   position: sticky;
-  top: 84px;
-  padding: 2rem;
+  top: 88px;
+  padding: 2.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  background-color: #FFFFFF;
-  box-shadow: 0 10px 40px rgba(0, 0, 255, 0.06);
-  border-radius: 20px;
+  gap: 1.5rem;
+  background-color: var(--color-surface, #FFFFFF);
+  border: 1px solid var(--color-border, #E5E2DA);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(17, 17, 17, 0.06));
+  border-radius: var(--radius-card, 28px);
 }
 
 .inspector-badge {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-family: var(--font-heading);
+  gap: 0.45rem;
+  font-family: var(--font-display, 'Manrope', sans-serif);
   font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--primary);
-  letter-spacing: 0.05em;
+  font-weight: 800;
+  color: var(--color-electric-orange, #FF6500);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .inspector-role {
-  font-size: 1.55rem;
-  color: var(--primary);
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 1.65rem;
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  color: var(--color-text, #111111);
 }
 
 .inspector-timeline {
-  font-family: var(--font-heading);
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  margin-top: -0.5rem;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 0.88rem;
+  font-weight: 750;
+  color: var(--color-text-secondary, #77756F);
+  margin-top: -0.65rem;
 }
 
 .inspector-desc {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
+  font-size: 0.92rem;
+  color: var(--color-text, #111111);
+  line-height: 1.6;
 }
 
 .inspector-skills-group {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding-top: 0.85rem;
-  border-top: 1px solid var(--bg-muted);
+  gap: 0.65rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--color-border-subtle, #EFECE6);
 }
 
 .group-title {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 0.82rem;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  color: var(--primary);
+  gap: 0.45rem;
+  font-size: 0.825rem;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-weight: 800;
+  color: var(--color-text, #111111);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .inspector-tags-flex {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 
 .inspector-list {
-  padding-left: 1.2rem;
-  font-size: 0.85rem;
-  color: var(--text-dark);
-  line-height: 1.5;
+  padding-left: 1.25rem;
+  font-size: 0.88rem;
+  color: var(--color-text, #111111);
+  line-height: 1.6;
 }
 
 .inspector-status-box {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 1px dashed var(--bg-muted);
+  gap: 0.85rem;
+  padding-top: 1.15rem;
+  border-top: 1px dashed var(--color-border, #E5E2DA);
 }
 
 .status-box-label {
   font-size: 0.85rem;
-  color: var(--text-muted);
+  font-weight: 600;
+  color: var(--color-text-secondary, #77756F);
 }
 
 @media (max-width: 992px) {
   .roadmap-banner-card {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1.25rem;
   }
+
   .roadmap-main-grid {
     grid-template-columns: 1fr;
+  }
+
+  .sticky-inspector {
+    position: static;
   }
 }

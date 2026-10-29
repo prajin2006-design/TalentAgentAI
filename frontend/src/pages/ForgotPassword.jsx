@@ -70,7 +70,7 @@ export const ForgotPassword = () => {
       <div className="auth-card-wrapper">
         <div className="auth-brand-stack text-center">
           <Link to="/" className="auth-brand-logo">
-            <span className="logo-dot" />
+            <img src="/logo.png" alt="Talent Agent AI" className="auth-brand-logo-img" />
             <span className="logo-text">TALENT AGENT <span className="text-electric-blue">AI</span></span>
           </Link>
           <h1 className="auth-heading">Reset your password</h1>

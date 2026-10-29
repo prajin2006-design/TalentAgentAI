@@ -80,7 +80,8 @@ export const Login = () => {
           </div>
 
           <Link to="/" className="auth-brand-name">
-            TALENT AGENT AI
+            <img src="/logo.png" alt="Talent Agent AI" className="auth-brand-logo-img" />
+            <span>TALENT AGENT AI</span>
           </Link>
 
           <h1 className="auth-brand-headline">
@@ -144,7 +145,7 @@ export const Login = () => {
           {/* Mobile brand header */}
           <div className="auth-mobile-header">
             <Link to="/" className="auth-mobile-logo">
-              <span className="brand-dot-lime" />
+              <img src="/logo.png" alt="Talent Agent AI" className="auth-brand-logo-img" />
               <span>TALENT AGENT AI</span>
             </Link>
           </div>

@@ -385,43 +385,181 @@ Return valid JSON with these exact keys:
             'top_skill_gaps': ['System Design']
         }
 
-def generate_professional_summary(user_id: int, custom_instructions: str = "") -> str:
-    """Generates a concise, high-impact, ATS-optimized professional summary using Groq AI."""
-    context, _ = get_candidate_context_for_ai(user_id)
-    prompt = f"""Generate a 3-sentence, high-impact ATS professional summary for a resume.
+def generate_professional_summary(user_or_data, target_role: str = "", tone: str = "professional") -> dict:
+    """
+    Generates a concise, high-impact, ATS-optimized professional summary using Groq AI.
+    Supports tones: 'concise' (2 impactful sentences), 'professional' (3-4 balanced sentences),
+    'achievement' (metrics and results-oriented).
+    Never invents unverified achievements or qualifications.
+    """
+    context = {}
+    if isinstance(user_or_data, dict):
+        context = dict(user_or_data)
+        pi = context.get('personal_info') or {}
+        role = target_role or pi.get('professional_title') or context.get('target_role') or 'Software Engineer'
+    elif isinstance(user_or_data, (int, str)) and str(user_or_data).isdigit():
+        context, _ = get_candidate_context_for_ai(int(user_or_data))
+        role = target_role or context.get('profile', {}).get('preferred_role') or 'Software Engineer'
+    else:
+        role = target_role or 'Software Engineer'
+
+    tone_instructions = {
+        'concise': 'Keep to exactly 2 tight, high-impact sentences (under 45 words). Focus strictly on core expertise and primary value.',
+        'achievement': 'Emphasize measurable impact, delivered solutions, and driving results without inventing specific false metrics.',
+        'professional': 'Write a polished, balanced 3-sentence summary highlighting core technical competencies, problem-solving, and career trajectory.'
+    }.get(tone, 'Write a polished, balanced 3-sentence professional summary.')
+
+    prompt = f"""Generate an ATS-optimized professional summary for a candidate targeting role: '{role}'.
+Tone Directive: {tone_instructions}
+
 Candidate Context:
 {json.dumps(context, default=str)}
-Custom Instructions: {custom_instructions}
 
-Return ONLY the summary text paragraph."""
-
-    messages = [
-        {"role": "system", "content": "You are a professional resume writer."},
-        {"role": "user", "content": prompt}
-    ]
-    reply, _, _ = _generate_ai_reply(messages)
-    return reply
-
-def optimize_bullet_points(user_id: int, raw_bullets: str) -> list[str]:
-    """Transforms rough work experience bullets into impact-driven ATS action verb statements."""
-    prompt = f"""Transform these work experience bullet points into 3 high-impact, ATS-optimized bullets with action verbs and placeholders for metrics like [X%].
-Raw Input:
-{raw_bullets}
-
-Return ONLY a JSON array of strings: ["Bullet 1", "Bullet 2", "Bullet 3"]"""
+Strict Rule: Do NOT invent unverified degrees, years of experience, or specific past employers.
+Return ONLY the final summary text paragraph."""
 
     messages = [
-        {"role": "system", "content": "You are an ATS resume editor. Return ONLY a JSON array of strings."},
+        {"role": "system", "content": "You are a professional ATS resume copywriter. Return ONLY the plain text paragraph."},
         {"role": "user", "content": prompt}
     ]
-    raw_json = generate_json_response(messages)
+
     try:
+        reply, _, _ = _generate_ai_reply(messages)
+        clean_reply = reply.strip().strip('"').strip("'")
+        return {
+            'success': True,
+            'summary': clean_reply,
+            'tone': tone,
+            'explanation': f"Crafted with {tone} tone, highlighting core capabilities for {role} without fabricating qualifications."
+        }
+    except Exception as e:
+        logger.warning(f"AI summary generation fallback: {e}")
+        skills = context.get('skills', [])
+        skill_str = ", ".join(skills[:4]) if isinstance(skills, list) and skills else "modern software development"
+        fallback = f"Results-driven {role} with proven competence in {skill_str}. Dedicated to designing robust, scalable solutions and collaborating across teams to deliver high-quality outcomes."
+        return {
+            'success': True,
+            'summary': fallback,
+            'tone': tone,
+            'explanation': "Generated structured baseline summary using verified skills."
+        }
+
+
+def optimize_bullet_points(draft_text_or_user, role: str = "Engineer", company: str = "Company", target_role: str = "") -> dict:
+    """
+    Transforms rough work experience or project bullets into impact-driven ATS action verb statements.
+    Ensures bullets start with past-tense action verbs, emphasize scope and responsibility,
+    and include realistic structure for metrics without fabricating false numbers.
+    """
+    raw_text = draft_text_or_user
+    if isinstance(draft_text_or_user, dict):
+        raw_text = draft_text_or_user.get('draft_text') or draft_text_or_user.get('description', '')
+
+    if not raw_text or not str(raw_text).strip():
+        return {
+            'success': False,
+            'error': 'Please provide draft text or bullet points to improve.'
+        }
+
+    prompt = f"""Rewrite these work experience bullet points for a {role} at {company}:
+Original Input:
+{raw_text}
+
+Rules:
+1. Each bullet MUST begin with a strong, diverse action verb (e.g. Engineered, Spearheaded, Optimized, Streamlined).
+2. Clarify action, context, and outcome.
+3. Preserve the candidate's actual factual tasks. NEVER invent unverified company achievements or claims.
+4. Return 2-4 concise, impactful bullet points.
+
+Return JSON with exact keys:
+{{
+  "bullets": ["Bullet 1", "Bullet 2"],
+  "explanation": "Brief 1-sentence note explaining why the action verbs and clarity improved."
+}}"""
+
+    messages = [
+        {"role": "system", "content": "You are an ATS Resume Editor. Return ONLY valid JSON."},
+        {"role": "user", "content": prompt}
+    ]
+
+    try:
+        raw_json = generate_json_response(messages)
         parsed = json.loads(raw_json)
-        if isinstance(parsed, list): return parsed
-        if isinstance(parsed, dict) and 'bullets' in parsed: return parsed['bullets']
+        bullets = parsed.get('bullets', [])
+        if not bullets and isinstance(parsed, list):
+            bullets = parsed
+        explanation = parsed.get('explanation', 'Enhanced with strong action verbs and impact-oriented structure.')
+        improved_text = "\n".join([f"• {b.lstrip('•-* ')}" for b in bullets if b])
+        return {
+            'success': True,
+            'original_text': str(raw_text).strip(),
+            'improved_text': improved_text,
+            'improved_bullets': bullets,
+            'explanation': explanation
+        }
+    except Exception as e:
+        logger.warning(f"AI bullet improvement fallback: {e}")
+        lines = [l.strip().lstrip('•-* ') for l in str(raw_text).split('\n') if l.strip()]
+        improved = [f"• Spearheaded key initiatives for {lines[0]}" if lines else f"• Engineered core components for {role}"]
+        if len(lines) > 1:
+            improved.append(f"• Collaborated cross-functionally to optimize {lines[1]}")
+        return {
+            'success': True,
+            'original_text': str(raw_text).strip(),
+            'improved_text': "\n".join(improved),
+            'improved_bullets': [b.lstrip('• ') for b in improved],
+            'explanation': 'Structured with foundational action verbs.'
+        }
+
+
+def suggest_skills_for_resume(resume_data: dict, target_role: str = "") -> dict:
+    """
+    Analyzes resume content and target role to suggest relevant, high-frequency industry skills
+    that the candidate can review and confirm before adding.
+    """
+    pi = resume_data.get('personal_info') or {}
+    role = target_role or pi.get('professional_title') or 'Software Engineer'
+    current_skills = resume_data.get('skills') or []
+
+    prompt = f"""Given target role '{role}' and candidate experience in:
+{json.dumps(resume_data.get('experience', []), default=str)[:600]}
+Current Skills: {json.dumps(current_skills, default=str)}
+
+Suggest 8-12 highly relevant industry skills divided into categories.
+Return ONLY valid JSON:
+{{
+  "suggestions": [
+    {{"name": "TypeScript", "category": "programming_languages"}},
+    {{"name": "React", "category": "frameworks_libraries"}},
+    {{"name": "PostgreSQL", "category": "databases_cloud"}},
+    {{"name": "Docker", "category": "tools_methods"}}
+  ]
+}}"""
+
+    messages = [
+        {"role": "system", "content": "You are a Technical Talent Recruiter. Return ONLY valid JSON."},
+        {"role": "user", "content": prompt}
+    ]
+
+    try:
+        raw_json = generate_json_response(messages)
+        parsed = json.loads(raw_json)
+        return {
+            'success': True,
+            'suggestions': parsed.get('suggestions', [])
+        }
     except Exception:
-        pass
-    return [b.strip() for b in raw_bullets.split('\n') if b.strip()][:3]
+        fallback = [
+            {"name": "Git", "category": "tools_methods"},
+            {"name": "REST APIs", "category": "tools_methods"},
+            {"name": "CI/CD", "category": "tools_methods"},
+            {"name": "SQL", "category": "databases_cloud"},
+            {"name": "Agile Methodologies", "category": "tools_methods"}
+        ]
+        return {
+            'success': True,
+            'suggestions': fallback
+        }
 
 generate_ats_summary = generate_professional_summary
 improve_experience_bullets = optimize_bullet_points

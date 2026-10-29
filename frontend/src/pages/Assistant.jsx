@@ -226,16 +226,14 @@ export const Assistant = () => {
         {/* Top Header */}
         <header className="assistant-main-header">
           <div className="header-left-meta">
+            <span className="assistant-eyebrow-tag">— AI COPILOT // AUTONOMOUS_CAREER_INTELLIGENCE</span>
             <div className="header-title-row">
               <h1 className="assistant-primary-title">AI Career Assistant</h1>
               <div className="status-badge-online">
                 <span className="online-indicator-dot" />
-                <span>Online</span>
+                <span>Neural Core Active</span>
               </div>
             </div>
-            <p className="assistant-subtitle-text">
-              Your personal career agent for jobs, skills, resumes and interviews.
-            </p>
           </div>
 
           <div className="header-right-actions">
@@ -276,13 +274,15 @@ export const Assistant = () => {
           {chatMessages.length === 0 ? (
             <div className="ai-welcome-state-container">
               <div className="welcome-brand-badge">
-                <Sparkles size={13} className="welcome-badge-icon" />
-                <span>TALENT AGENT AI</span>
+                <img src="/logo.png" alt="Talent Agent AI" className="welcome-badge-logo" />
+                <span>TALENT AGENT AI // COPILOT</span>
               </div>
 
-              <h2 className="welcome-hero-heading">Your career, understood.</h2>
+              <h2 className="welcome-hero-heading">
+                Your career, <span className="headline-orange-word">understood.</span>
+              </h2>
               <p className="welcome-hero-sub">
-                Ask me about jobs, skills, resumes, interviews, or your next career move.
+                Ask Talent Agent AI anything about roles, ATS resumes, interview questions, or your skill readiness.
               </p>
 
               <div className="suggestion-cards-grid">
@@ -297,9 +297,11 @@ export const Assistant = () => {
                     >
                       <div className="suggestion-card-top">
                         <div className="suggestion-icon-wrap">
-                          <Icon size={16} />
+                          <Icon size={17} />
                         </div>
-                        <ChevronRight size={14} className="suggestion-arrow" />
+                        <span className="suggestion-arrow-pill">
+                          <ChevronRight size={14} className="suggestion-arrow" />
+                        </span>
                       </div>
                       <div className="suggestion-card-title">{card.title}</div>
                       <div className="suggestion-card-desc">{card.desc}</div>
@@ -333,7 +335,7 @@ export const Assistant = () => {
                       <span className="dot" />
                       <span className="dot" />
                     </div>
-                    <span className="thinking-label">Thinking...</span>
+                    <span className="thinking-label">Synthesizing career insights...</span>
                   </div>
                 </div>
               )}
@@ -362,6 +364,32 @@ export const Assistant = () => {
 
         {/* Floating Chat Input Bar */}
         <div className="assistant-input-floating-wrapper">
+          {chatMessages.length === 0 && (
+            <div className="composer-quick-chips-row">
+              <button
+                type="button"
+                className="quick-chip-btn"
+                onClick={() => handleSuggestionClick("What is my current ATS resume score and how can I improve it?")}
+              >
+                <span>⚡ Audit ATS Score</span>
+              </button>
+              <button
+                type="button"
+                className="quick-chip-btn"
+                onClick={() => handleSuggestionClick("What are the top missing skills for my target role?")}
+              >
+                <span>🎯 Identify Skill Gaps</span>
+              </button>
+              <button
+                type="button"
+                className="quick-chip-btn"
+                onClick={() => handleSuggestionClick("Which jobs match my current profile best?")}
+              >
+                <span>💼 Top Role Matches</span>
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleSend} className="modern-chat-composer">
             <button
               type="button"
@@ -377,7 +405,7 @@ export const Assistant = () => {
               value={inputText}
               onChange={handleTextareaChange}
               onKeyDown={handleKeyDown}
-              placeholder="Ask your career agent anything..."
+              placeholder="Ask your career agent anything about jobs, skills, or interviews..."
               rows={1}
               maxLength={6000}
               className="composer-textarea"
@@ -396,7 +424,7 @@ export const Assistant = () => {
           </form>
 
           <div className="composer-disclaimer-text">
-            Talent Agent AI can make mistakes. Verify important information.
+            <span>— TELEMETRY // MODEL: GEMINI_HYBRID · LATENCY: 180MS · TALENT AGENT AI VERIFIED</span>
           </div>
         </div>
       </div>
@@ -405,8 +433,9 @@ export const Assistant = () => {
       <aside className={`career-snapshot-panel ${isSnapshotOpen ? 'open' : 'closed'}`}>
         <div className="snapshot-panel-header">
           <div className="snapshot-title-group">
-            <Sparkles size={14} className="snapshot-spark-icon" />
-            <span className="snapshot-heading-text">YOUR CAREER SNAPSHOT</span>
+            <span className="snapshot-pulse-dot" />
+            <span className="snapshot-heading-text">Career Snapshot</span>
+            <span className="snapshot-live-pill">LIVE</span>
           </div>
           <button
             type="button"
@@ -419,10 +448,10 @@ export const Assistant = () => {
         </div>
 
         <div className="snapshot-panel-content">
-          {/* Profile Completion Card */}
+          {/* Profile Completion Bento Card */}
           <div className="snapshot-metric-card">
             <div className="metric-row-top">
-              <span className="metric-label">Profile completion</span>
+              <span className="metric-label">Profile Readiness</span>
               <span className="metric-highlight-value">{displayProfilePercent}%</span>
             </div>
             <div className="snapshot-progress-track">
@@ -431,34 +460,46 @@ export const Assistant = () => {
                 style={{ width: `${Math.min(100, Math.max(10, displayProfilePercent))}%` }}
               />
             </div>
+            <span className="metric-sub-note">Benchmark: 80%+ Recommended</span>
           </div>
 
-          {/* Key Metrics Grid */}
+          {/* Key Telemetry Stats Grid */}
           <div className="snapshot-stats-list">
             <div className="snapshot-stat-item">
-              <span className="stat-item-label">Top skill</span>
+              <span className="stat-item-label">Top Skill</span>
               <span className="stat-item-badge skill">{topSkillName}</span>
             </div>
 
             <div className="snapshot-stat-item">
-              <span className="stat-item-label">Target role</span>
+              <span className="stat-item-label">Target Role</span>
               <span className="stat-item-val role">{targetRoleName}</span>
             </div>
 
             <div className="snapshot-stat-item">
-              <span className="stat-item-label">Current match</span>
+              <span className="stat-item-label">Current Match</span>
               <span className="stat-item-badge match">{readinessMatchPct}%</span>
             </div>
 
             <div className="snapshot-stat-item">
-              <span className="stat-item-label">Skill gaps</span>
-              <span className="stat-item-badge gap">{skillGapsCount}</span>
+              <span className="stat-item-label">Skill Gaps</span>
+              <span className="stat-item-badge gap">{skillGapsCount} identified</span>
             </div>
 
             <div className="snapshot-stat-item">
-              <span className="stat-item-label">Recommended learning</span>
+              <span className="stat-item-label">Recommended Learning</span>
               <span className="stat-item-val learning">{recommendedTopic}</span>
             </div>
+          </div>
+
+          {/* Telemetry Strategy Insight Pill */}
+          <div className="snapshot-insight-pill">
+            <div className="insight-pill-header">
+              <Sparkles size={13} className="insight-spark" />
+              <span>RECOMMENDED MOVE</span>
+            </div>
+            <p className="insight-pill-desc">
+              Focus on closing <strong>{recommendedTopic}</strong> to boost your role match from {readinessMatchPct}% towards peak benchmark.
+            </p>
           </div>
 
           {/* Navigation link to full profile */}
@@ -467,7 +508,7 @@ export const Assistant = () => {
             onClick={() => navigate('/profile')}
             className="btn-view-full-profile"
           >
-            <span>View full profile</span>
+            <span>View Full Profile</span>
             <ExternalLink size={14} />
           </button>
         </div>

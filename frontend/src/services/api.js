@@ -166,16 +166,21 @@ export const resumeAPI = {
   getResumeDetail: (id) => request(`/resumes/${id}`, { method: 'GET' }),
   updateResume: (id, payload) => request(`/resumes/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
   deleteResume: (id) => request(`/resumes/${id}`, { method: 'DELETE' }),
+  duplicateResume: (id) => request(`/resumes/${id}/duplicate`, { method: 'POST' }),
+  renameResume: (id, name) => request(`/resumes/${id}/rename`, { method: 'PATCH', body: JSON.stringify({ name }) }),
+  parseImportResume: (formData) => request('/resumes/parse-import', { method: 'POST', body: formData }),
   deleteUploadedPDF: (id) => request(`/resumes/uploaded/${id}`, { method: 'DELETE' }),
   analyzeATS: (id, payload = {}) => request(id ? `/resumes/${id}/ats-analysis` : '/resumes/ats-analysis', { method: 'POST', body: JSON.stringify(payload) }),
   analyzeJobATS: (id, payload = {}) => request(id ? `/resumes/${id}/job-match` : '/resumes/job-match', { method: 'POST', body: JSON.stringify(payload) }),
   generateSummary: (payload = {}, id = null) => request(id ? `/resumes/${id}/generate-summary` : '/resumes/generate-summary', { method: 'POST', body: JSON.stringify(payload) }),
   improveBullets: (payload = {}, id = null) => request(id ? `/resumes/${id}/improve-bullets` : '/resumes/improve-bullets', { method: 'POST', body: JSON.stringify(payload) }),
+  suggestSkills: (payload = {}, id = null) => request(id ? `/resumes/${id}/suggest-skills` : '/resumes/suggest-skills', { method: 'POST', body: JSON.stringify(payload) }),
   optimizeResume: (payload) => request('/resume/optimize', { method: 'POST', body: JSON.stringify(payload) }),
   getVersions: () => request('/resume/versions', { method: 'GET' }),
-  downloadPDF: (id, template = 'modern') => request(`/resumes/${id}/download/pdf?template=${encodeURIComponent(template)}`, { method: 'GET', responseType: 'blob' }),
-  downloadDOCX: (id, template = 'modern') => request(`/resumes/${id}/download/docx?template=${encodeURIComponent(template)}`, { method: 'GET', responseType: 'blob' }),
-  exportResume: (format = 'pdf', resumeId = null, template = 'modern') => {
+  downloadPDF: (id, template = 'classic') => request(`/resumes/${id}/download/pdf?template=${encodeURIComponent(template)}`, { method: 'GET', responseType: 'blob' }),
+  downloadDOCX: (id, template = 'classic') => request(`/resumes/${id}/download/docx?template=${encodeURIComponent(template)}`, { method: 'GET', responseType: 'blob' }),
+  downloadTXT: (id, template = 'classic') => request(`/resumes/${id}/download/txt?template=${encodeURIComponent(template)}`, { method: 'GET', responseType: 'blob' }),
+  exportResume: (format = 'pdf', resumeId = null, template = 'classic') => {
     const q = new URLSearchParams({ format, template });
     if (resumeId) q.append('resume_id', resumeId);
     return request(`/resumes/export?${q.toString()}`, { method: 'GET', responseType: 'blob' });

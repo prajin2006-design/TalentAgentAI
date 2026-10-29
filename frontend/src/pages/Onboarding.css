@@ -1,18 +1,20 @@
 /* ==========================================================================
    Talent Agent AI — Onboarding Page Styling
+   Reference: Proofmode Bold Editorial Aesthetic
+   Palette: Ice White · Soft Black · Electric Orange
    ========================================================================== */
 
 .onboarding-page-wrapper {
   min-height: 100vh;
-  background-color: var(--color-bg, #F8F9FC);
-  padding: 3rem 1.5rem;
+  background-color: var(--color-bg, #F5F4EF);
+  padding: 3.5rem 1.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .onboarding-container {
-  max-width: 760px;
+  max-width: 780px;
   width: 100%;
 }
 
@@ -20,55 +22,72 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.75rem;
+  margin-bottom: 2rem;
 }
 
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
+}
+
+.onboarding-logo-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+
+.brand-logo svg {
+  color: var(--color-electric-orange, #FF6500);
 }
 
 .logo-text {
-  font-size: 1rem;
-  font-weight: 800;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 1.05rem;
+  font-weight: 850;
+  letter-spacing: -0.02em;
   color: var(--color-text, #111111);
 }
 
 .logo-highlight {
-  color: var(--color-primary, #2F46FF);
+  color: var(--color-electric-orange, #FF6500);
 }
 
 .onboarding-card {
-  padding: 2.25rem;
+  padding: 2.75rem;
   background-color: var(--color-surface, #FFFFFF);
-  border: 1px solid var(--color-border, #E7EAF0);
-  border-radius: var(--radius-card, 16px);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border, #E5E2DA);
+  border-radius: var(--radius-card, 28px);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(17, 17, 17, 0.04));
 }
 
 .step-content-body {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }
 
 .step-pane {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .step-title {
-  font-size: 1.5rem;
-  font-weight: 750;
+  font-family: var(--font-display, 'Manrope', sans-serif);
+  font-size: 1.65rem;
+  font-weight: 800;
   color: var(--color-text, #111111);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .step-sub {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary, #667085);
-  margin-top: -0.5rem;
+  font-size: 0.95rem;
+  color: var(--color-text-secondary, #77756F);
+  margin-top: -0.75rem;
   margin-bottom: 0.5rem;
+  line-height: 1.5;
 }
 
 .status-grid {
@@ -80,40 +99,46 @@
 .status-option-card {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.25rem;
-  background-color: var(--color-surface-hover, #F8FAFC);
-  border: 1px solid var(--color-border, #E7EAF0);
-  border-radius: var(--radius-md, 10px);
+  gap: 0.85rem;
+  padding: 1.15rem 1.35rem;
+  background-color: var(--color-surface, #FFFFFF);
+  border: 1.5px solid var(--color-border, #E5E2DA);
+  border-radius: var(--radius-md, 16px);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-fast, 150ms ease);
 }
 
-.status-option-card:hover, .status-option-card.selected {
-  border-color: var(--color-primary, #2F46FF);
-  background-color: var(--color-primary-subtle, #EEF2FF);
+.status-option-card:hover {
+  border-color: var(--color-text, #111111);
+  background-color: var(--color-surface-hover, #ECEAE3);
+}
+
+.status-option-card.selected {
+  border-color: var(--color-electric-orange, #FF6500);
+  background-color: var(--color-orange-subtle, #FFF4ED);
 }
 
 .radio-circle {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  border: 1px solid var(--color-border, #E7EAF0);
+  border: 1.5px solid var(--color-border, #E5E2DA);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--color-text, #111111);
+  transition: all var(--transition-fast, 150ms ease);
 }
 
 .status-option-card.selected .radio-circle {
-  background-color: var(--color-primary, #2F46FF);
-  border-color: var(--color-primary, #2F46FF);
+  background-color: var(--color-electric-orange, #FF6500);
+  border-color: var(--color-electric-orange, #FF6500);
   color: #FFFFFF;
 }
 
 .status-text {
-  font-weight: 650;
-  font-size: 0.92rem;
+  font-weight: 700;
+  font-size: 0.95rem;
   color: var(--color-text, #111111);
 }
 
@@ -121,6 +146,16 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.25rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary, #77756F);
+  margin-bottom: 0.45rem;
 }
 
 .skill-input-row {
@@ -136,34 +171,41 @@
 }
 
 .skill-pill {
-  font-size: 0.8125rem;
-  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
+  background-color: var(--color-surface-subtle, #EFEEE8);
+  border: 1px solid var(--color-border, #E5E2DA);
+  color: var(--color-text, #111111);
   border-radius: var(--radius-pill, 9999px);
+  transition: all var(--transition-fast, 150ms ease);
 }
 
 .remove-skill-btn {
   background: transparent;
   border: none;
-  color: var(--color-text-secondary, #667085);
+  color: var(--color-text-secondary, #77756F);
   cursor: pointer;
   display: flex;
   align-items: center;
+  padding: 0;
+  transition: color var(--transition-fast, 150ms ease);
 }
 
 .remove-skill-btn:hover {
-  color: var(--color-error, #EF4444);
+  color: var(--color-error, #DC2626);
 }
 
 .onboarding-controls-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 2rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--color-border-subtle, #F0F2F6);
+  margin-top: 2.25rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border-subtle, #EFECE6);
 }
 
 /* Responsiveness */
@@ -172,6 +214,7 @@
     grid-template-columns: 1fr;
   }
   .onboarding-card {
-    padding: 1.5rem;
+    padding: 1.75rem;
+    border-radius: var(--radius-lg, 24px);
   }
 }

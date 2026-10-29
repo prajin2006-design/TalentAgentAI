@@ -20,12 +20,14 @@ from services.ats_service import (
     optimize_resume_content,
     compute_builder_ats_score,
     export_resume_pdf,
-    export_resume_docx
+    export_resume_docx,
+    export_resume_txt
 )
 from services.ai_service import (
     generate_ats_summary,
     improve_experience_bullets,
-    analyze_job_ats_match
+    analyze_job_ats_match,
+    suggest_skills_for_resume
 )
 
 resume_bp = Blueprint('resumes', __name__, url_prefix='/api')
@@ -56,6 +58,11 @@ def _format_resume_record(rec):
     d['certifications'] = _safe_json(d.get('certifications'), [])
     d['achievements'] = _safe_json(d.get('achievements'), [])
     d['languages'] = _safe_json(d.get('languages'), [])
+    d['internships'] = _safe_json(d.get('internships'), [])
+    d['custom_sections'] = _safe_json(d.get('custom_sections'), [])
+    d['section_order'] = _safe_json(d.get('section_order'), None)
+    d['section_visibility'] = _safe_json(d.get('section_visibility'), {})
+    d['styling_options'] = _safe_json(d.get('styling_options'), {})
     d['ats_analysis'] = _safe_json(d.get('ats_analysis'), {})
     return d
 
@@ -424,6 +431,15 @@ def create_user_resume():
     certifications = data.get('certifications') or []
     achievements = data.get('achievements') or []
     languages = data.get('languages') or [{'language': 'English', 'proficiency': 'Fluent'}]
+    internships = data.get('internships') or []
+    custom_sections = data.get('custom_sections') or []
+    section_order = data.get('section_order') or None
+    section_visibility = data.get('section_visibility') or {}
+    styling_options = data.get('styling_options') or {
+        'fontSize': 'normal',
+        'spacing': 'normal',
+        'accentColor': '#FF6500'
+    }
 
     # Compute initial ATS score
     sample_data = {
@@ -435,15 +451,22 @@ def create_user_resume():
         'projects': projects,
         'certifications': certifications,
         'achievements': achievements,
-        'languages': languages
+        'languages': languages,
+        'internships': internships,
+        'custom_sections': custom_sections
     }
     ats_score_res = compute_builder_ats_score(sample_data)
     ats_score = ats_score_res.get('score', 85)
 
     resume_id = execute_query(
         """
-        INSERT INTO ats_resumes (user_id, name, template, personal_info, summary, experience, education, skills, projects, certifications, achievements, languages, ats_score, ats_analysis, target_role, target_job_description)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO ats_resumes (
+            user_id, name, template, personal_info, summary, experience, education,
+            skills, projects, certifications, achievements, languages,
+            internships, custom_sections, section_order, section_visibility, styling_options,
+            ats_score, ats_analysis, target_role, target_job_description
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (
             user['id'],
@@ -458,6 +481,11 @@ def create_user_resume():
             json.dumps(certifications),
             json.dumps(achievements),
             json.dumps(languages),
+            json.dumps(internships),
+            json.dumps(custom_sections),
+            json.dumps(section_order) if section_order else None,
+            json.dumps(section_visibility),
+            json.dumps(styling_options),
             ats_score,
             json.dumps(ats_score_res),
             personal_info.get('professional_title', ''),
@@ -502,7 +530,7 @@ def update_user_resume(resume_id):
 
     data = request.get_json() or {}
     name = data.get('name', 'My ATS Resume')
-    template = data.get('template', 'modern')
+    template = data.get('template', 'classic')
     personal_info = data.get('personal_info') or {}
     summary = data.get('summary', '')
     experience = data.get('experience') or []
@@ -512,6 +540,11 @@ def update_user_resume(resume_id):
     certifications = data.get('certifications') or []
     achievements = data.get('achievements') or []
     languages = data.get('languages') or []
+    internships = data.get('internships') or []
+    custom_sections = data.get('custom_sections') or []
+    section_order = data.get('section_order') or None
+    section_visibility = data.get('section_visibility') or {}
+    styling_options = data.get('styling_options') or {}
     target_role = data.get('target_role', '')
     target_job_description = data.get('target_job_description', '')
 
@@ -525,7 +558,9 @@ def update_user_resume(resume_id):
         'projects': projects,
         'certifications': certifications,
         'achievements': achievements,
-        'languages': languages
+        'languages': languages,
+        'internships': internships,
+        'custom_sections': custom_sections
     }
     ats_score_res = compute_builder_ats_score(sample_data)
     ats_score = ats_score_res.get('score', 85)
@@ -535,7 +570,9 @@ def update_user_resume(resume_id):
         UPDATE ats_resumes
         SET name = %s, template = %s, personal_info = %s, summary = %s, experience = %s,
             education = %s, skills = %s, projects = %s, certifications = %s, achievements = %s,
-            languages = %s, ats_score = %s, ats_analysis = %s, target_role = %s, target_job_description = %s,
+            languages = %s, internships = %s, custom_sections = %s, section_order = %s,
+            section_visibility = %s, styling_options = %s,
+            ats_score = %s, ats_analysis = %s, target_role = %s, target_job_description = %s,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = %s AND user_id = %s
         """,
@@ -551,6 +588,11 @@ def update_user_resume(resume_id):
             json.dumps(certifications),
             json.dumps(achievements),
             json.dumps(languages),
+            json.dumps(internships),
+            json.dumps(custom_sections),
+            json.dumps(section_order) if section_order else None,
+            json.dumps(section_visibility),
+            json.dumps(styling_options),
             ats_score,
             json.dumps(ats_score_res),
             target_role,
@@ -566,6 +608,127 @@ def update_user_resume(resume_id):
         'success': True,
         'message': 'Resume saved successfully.',
         'resume': _format_resume_record(updated)
+    }), 200
+
+@resume_bp.route('/resumes/<int:resume_id>/duplicate', methods=['POST'])
+def duplicate_user_resume(resume_id):
+    """Duplicates an existing ATS resume for tailoring to new job applications."""
+    user, err = require_auth()
+    if err: return err
+
+    rec = execute_query("SELECT * FROM ats_resumes WHERE id = %s AND user_id = %s", (resume_id, user['id']), fetchone=True)
+    if not rec:
+        return jsonify({'error': 'Resume not found or access denied.'}), 404
+
+    dup_name = f"{rec['name']} (Copy)"
+    new_id = execute_query(
+        """
+        INSERT INTO ats_resumes (
+            user_id, name, template, personal_info, summary, experience, education,
+            skills, projects, certifications, achievements, languages,
+            internships, custom_sections, section_order, section_visibility, styling_options,
+            ats_score, ats_analysis, target_role, target_job_description
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """,
+        (
+            user['id'],
+            dup_name,
+            rec['template'],
+            rec['personal_info'],
+            rec['summary'],
+            rec['experience'],
+            rec['education'],
+            rec['skills'],
+            rec['projects'],
+            rec['certifications'],
+            rec['achievements'],
+            rec['languages'],
+            rec.get('internships'),
+            rec.get('custom_sections'),
+            rec.get('section_order'),
+            rec.get('section_visibility'),
+            rec.get('styling_options'),
+            rec['ats_score'],
+            rec['ats_analysis'],
+            rec['target_role'],
+            rec['target_job_description']
+        ),
+        commit=True,
+        return_id=True
+    )
+
+    dup_rec = execute_query("SELECT * FROM ats_resumes WHERE id = %s", (new_id,), fetchone=True)
+    return jsonify({
+        'success': True,
+        'message': 'Resume duplicated successfully.',
+        'resume': _format_resume_record(dup_rec)
+    }), 201
+
+@resume_bp.route('/resumes/<int:resume_id>/rename', methods=['PATCH', 'PUT'])
+def rename_user_resume(resume_id):
+    """Renames an ATS resume."""
+    user, err = require_auth()
+    if err: return err
+
+    data = request.get_json() or {}
+    new_name = data.get('name', '').strip()
+    if not new_name:
+        return jsonify({'error': 'Please provide a valid resume name.'}), 400
+
+    rec = execute_query("SELECT id FROM ats_resumes WHERE id = %s AND user_id = %s", (resume_id, user['id']), fetchone=True)
+    if not rec:
+        return jsonify({'error': 'Resume not found.'}), 404
+
+    execute_query("UPDATE ats_resumes SET name = %s WHERE id = %s AND user_id = %s", (new_name, resume_id, user['id']), commit=True)
+    updated = execute_query("SELECT * FROM ats_resumes WHERE id = %s", (resume_id,), fetchone=True)
+    return jsonify({
+        'success': True,
+        'message': 'Resume renamed.',
+        'resume': _format_resume_record(updated)
+    }), 200
+
+@resume_bp.route('/resumes/parse-import', methods=['POST'])
+def parse_import_resume():
+    """
+    Parses an uploaded PDF or DOCX file and returns the extracted structured sections
+    WITHOUT overwriting the active resume.
+    Allows the candidate to review and confirm the extracted data before applying it.
+    """
+    user, err = require_auth()
+    if err: return err
+
+    if 'resume' not in request.files and 'file' not in request.files:
+        return jsonify({'error': 'Please select a PDF or DOCX file to import.'}), 400
+
+    file_obj = request.files.get('resume') or request.files.get('file')
+    filename = file_obj.filename or 'resume.pdf'
+    fn_lower = filename.lower()
+
+    if not (fn_lower.endswith('.pdf') or fn_lower.endswith('.docx')):
+        return jsonify({'error': 'Only PDF and DOCX resume files are supported for import.'}), 400
+
+    file_bytes = file_obj.read()
+    if len(file_bytes) > 10 * 1024 * 1024:
+        return jsonify({'error': 'File exceeds the 10 MB maximum limit.'}), 400
+    if len(file_bytes) < 100:
+        return jsonify({'error': 'The uploaded file appears to be empty.'}), 400
+
+    extraction = extract_resume_text(file_bytes, filename)
+    if not extraction['success']:
+        return jsonify({
+            'success': False,
+            'error': extraction.get('error', 'Unable to extract text from file. Scanned images without OCR are not supported.')
+        }), 400
+
+    extracted_text = extraction['extracted_text']
+    structured_data = parse_and_structure_resume_text(extracted_text, user)
+
+    return jsonify({
+        'success': True,
+        'message': 'Resume text parsed successfully. Please review the extracted data.',
+        'filename': filename,
+        'parsed_data': structured_data
     }), 200
 
 @resume_bp.route('/resumes/<int:resume_id>', methods=['DELETE'])
@@ -588,7 +751,26 @@ def delete_user_resume(resume_id):
 @resume_bp.route('/resumes/generate-summary', methods=['POST'])
 @resume_bp.route('/resumes/<int:resume_id>/generate-summary', methods=['POST'])
 def generate_summary_endpoint(resume_id=None):
-    """Gemini AI generates concise ATS-optimized professional summary."""
+    """Generates concise, tone-adapted ATS-optimized professional summary using AI."""
+    user, err = require_auth()
+    if err: return err
+
+    data = request.get_json() or {}
+    target_role = data.get('target_role', '')
+    tone = data.get('tone', 'professional')
+
+    resume_data = data
+    if resume_id and not data.get('personal_info'):
+        rec = execute_query("SELECT * FROM ats_resumes WHERE id = %s AND user_id = %s", (resume_id, user['id']), fetchone=True)
+        if rec: resume_data = _format_resume_record(rec)
+
+    res = generate_ats_summary(resume_data, target_role=target_role, tone=tone)
+    return jsonify(res), 200
+
+@resume_bp.route('/resumes/suggest-skills', methods=['POST'])
+@resume_bp.route('/resumes/<int:resume_id>/suggest-skills', methods=['POST'])
+def suggest_skills_endpoint(resume_id=None):
+    """Suggests relevant skills based on candidate background and target role for confirmation."""
     user, err = require_auth()
     if err: return err
 
@@ -596,17 +778,17 @@ def generate_summary_endpoint(resume_id=None):
     target_role = data.get('target_role', '')
 
     resume_data = data
-    if resume_id and not data.get('personal_info'):
+    if resume_id and not data.get('skills'):
         rec = execute_query("SELECT * FROM ats_resumes WHERE id = %s AND user_id = %s", (resume_id, user['id']), fetchone=True)
         if rec: resume_data = _format_resume_record(rec)
 
-    res = generate_ats_summary(resume_data, target_role)
+    res = suggest_skills_for_resume(resume_data, target_role=target_role)
     return jsonify(res), 200
 
 @resume_bp.route('/resumes/improve-bullets', methods=['POST'])
 @resume_bp.route('/resumes/<int:resume_id>/improve-bullets', methods=['POST'])
 def improve_bullets_endpoint(resume_id=None):
-    """Gemini AI converts rough text into impact-driven ATS action-verb bullets."""
+    """Converts rough text into action-verb bullet points with explanation."""
     user, err = require_auth()
     if err: return err
 
@@ -614,8 +796,9 @@ def improve_bullets_endpoint(resume_id=None):
     draft_text = data.get('draft_text', data.get('description', '')).strip()
     role = data.get('role', data.get('job_title', 'Position'))
     company = data.get('company', 'Company')
+    target_role = data.get('target_role', '')
 
-    res = improve_experience_bullets(draft_text, role, company)
+    res = improve_experience_bullets(draft_text, role, company, target_role)
     return jsonify(res), 200 if res.get('success') else 400
 
 @resume_bp.route('/resumes/ats-analysis', methods=['POST'])
@@ -683,7 +866,7 @@ def analyze_job_match_endpoint(resume_id=None):
     return jsonify(res), 200 if res.get('success') else 400
 
 # ==========================================
-# PDF & DOCX DOWNLOADS
+# PDF, DOCX, AND TXT DOWNLOADS
 # ==========================================
 
 @resume_bp.route('/resumes/<int:resume_id>/download/pdf', methods=['GET'])
@@ -698,7 +881,7 @@ def download_resume_pdf(resume_id):
         return jsonify({'error': 'Resume not found.'}), 404
 
     resume_data = _format_resume_record(rec)
-    tpl = template or resume_data.get('template', 'modern')
+    tpl = template or resume_data.get('template', 'classic')
 
     pdf_bytes = export_resume_pdf(resume_data, template=tpl)
     raw_name = resume_data.get('personal_info', {}).get('full_name') or user['full_name']
@@ -724,7 +907,7 @@ def download_resume_docx(resume_id):
         return jsonify({'error': 'Resume not found.'}), 404
 
     resume_data = _format_resume_record(rec)
-    tpl = template or resume_data.get('template', 'modern')
+    tpl = template or resume_data.get('template', 'classic')
 
     docx_bytes = export_resume_docx(resume_data, template=tpl)
     raw_name = resume_data.get('personal_info', {}).get('full_name') or user['full_name']
@@ -738,16 +921,40 @@ def download_resume_docx(resume_id):
         download_name=f"{clean_name}_{doc_name}.docx"
     )
 
+@resume_bp.route('/resumes/<int:resume_id>/download/txt', methods=['GET'])
+def download_resume_txt(resume_id):
+    """Downloads ATS resume as plain-text ASCII for ATS text extraction verification."""
+    user, err = require_auth()
+    if err: return err
+
+    template = request.args.get('template', 'classic')
+    rec = execute_query("SELECT * FROM ats_resumes WHERE id = %s AND user_id = %s", (resume_id, user['id']), fetchone=True)
+    if not rec:
+        return jsonify({'error': 'Resume not found.'}), 404
+
+    resume_data = _format_resume_record(rec)
+    txt_str = export_resume_txt(resume_data, template=template)
+    raw_name = resume_data.get('personal_info', {}).get('full_name') or user['full_name']
+    clean_name = re.sub(r'[^\w\-]', '_', raw_name.strip())
+    doc_name = re.sub(r'[^\w\-]', '_', resume_data.get('name', 'ATS_Resume').strip())
+
+    return send_file(
+        io.BytesIO(txt_str.encode('utf-8')),
+        mimetype='text/plain',
+        as_attachment=True,
+        download_name=f"{clean_name}_{doc_name}.txt"
+    )
+
 @resume_bp.route('/resumes/export', methods=['POST', 'GET'])
 @resume_bp.route('/resume/export', methods=['POST', 'GET'])
 def export_resume():
-    """Legacy resume export endpoint."""
+    """Unified resume export endpoint supporting PDF, DOCX, and TXT."""
     user, err = require_auth()
     if err: return err
 
     file_format = request.args.get('format', 'pdf').lower()
     resume_id = request.args.get('resume_id')
-    template = request.args.get('template', 'modern')
+    template = request.args.get('template', 'classic')
 
     if resume_id:
         rec = execute_query("SELECT * FROM ats_resumes WHERE id = %s AND user_id = %s", (resume_id, user['id']), fetchone=True)
@@ -757,6 +964,9 @@ def export_resume():
             if file_format == 'docx':
                 file_bytes = export_resume_docx(resume_data, template=template)
                 return send_file(io.BytesIO(file_bytes), mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document', as_attachment=True, download_name=f"{clean_name}_ATS_Resume.docx")
+            elif file_format == 'txt':
+                txt_data = export_resume_txt(resume_data, template=template)
+                return send_file(io.BytesIO(txt_data.encode('utf-8')), mimetype='text/plain', as_attachment=True, download_name=f"{clean_name}_ATS_Resume.txt")
             else:
                 file_bytes = export_resume_pdf(resume_data, template=template)
                 return send_file(io.BytesIO(file_bytes), mimetype='application/pdf', as_attachment=True, download_name=f"{clean_name}_ATS_Resume.pdf")
@@ -784,6 +994,9 @@ def export_resume():
     if file_format == 'docx':
         file_bytes = export_resume_docx(candidate_bundle, template=template)
         return send_file(io.BytesIO(file_bytes), mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document', as_attachment=True, download_name=f"{clean_name}_ATS_Resume.docx")
+    elif file_format == 'txt':
+        txt_data = export_resume_txt(candidate_bundle, template=template)
+        return send_file(io.BytesIO(txt_data.encode('utf-8')), mimetype='text/plain', as_attachment=True, download_name=f"{clean_name}_ATS_Resume.txt")
     else:
         file_bytes = export_resume_pdf(candidate_bundle, template=template)
         return send_file(io.BytesIO(file_bytes), mimetype='application/pdf', as_attachment=True, download_name=f"{clean_name}_ATS_Resume.pdf")

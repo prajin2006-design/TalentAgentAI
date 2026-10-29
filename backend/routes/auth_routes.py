@@ -127,6 +127,13 @@ def signup():
         commit=True
     )
 
+    # Invalidate previous unused OTPs for this email before inserting new one
+    execute_query(
+        "UPDATE otp_verifications SET used = True, is_used = True WHERE email = %s AND purpose = 'email_verification'",
+        (email,),
+        commit=True
+    )
+
     otp = generate_otp(6)
     otp_h = hash_otp(otp, email)
     expires_at = datetime.utcnow() + timedelta(minutes=10)
@@ -167,40 +174,78 @@ def verify_email():
     if user['email_verified']:
         return jsonify({'error': 'Email is already verified. Please log in with your password.'}), 409
 
-    otp_record = execute_query(
+    # Fetch active OTP records for this email, ordered strictly by newest id first
+    otp_records = execute_query(
         """
         SELECT * FROM otp_verifications
         WHERE email = %s AND purpose = 'email_verification' AND (used = False OR used IS NULL) AND (is_used = False OR is_used IS NULL)
-        ORDER BY created_at DESC LIMIT 1
+        ORDER BY id DESC
         """,
         (email,),
-        fetchone=True
-    )
+        fetchall=True
+    ) or []
 
-    if not otp_record:
+    if not otp_records:
         return jsonify({'error': 'No active OTP verification request found. Please click resend OTP.'}), 400
 
     if not user.get('is_active') or user.get('role') != 'candidate':
         return jsonify({'success': False, 'error': 'This account is not eligible for candidate access.'}), 403
 
-    expires_at = otp_record['expires_at']
-    if isinstance(expires_at, str):
-        try:
-            expires_at = datetime.fromisoformat(expires_at)
-        except (TypeError, ValueError):
-            return jsonify({'error': 'OTP has expired. Please request a new verification code.'}), 400
+    now_utc = datetime.utcnow()
+    now_local = datetime.now()
 
-    if not isinstance(expires_at, datetime) or datetime.utcnow() > expires_at:
+    # Find matching valid, unexpired record
+    matching_record = None
+    all_expired = True
+
+    for record in otp_records:
+        exp = record.get('expires_at')
+        if isinstance(exp, str):
+            try:
+                exp = datetime.strptime(exp.split('.')[0], '%Y-%m-%d %H:%M:%S')
+            except Exception:
+                try:
+                    exp = datetime.fromisoformat(exp)
+                except Exception:
+                    continue
+
+        is_expired = False
+        if isinstance(exp, datetime):
+            # Check against both UTC and local times to be timezone-independent
+            diff_utc = (exp - now_utc).total_seconds()
+            diff_local = (exp - now_local).total_seconds()
+            if diff_utc < 0 and diff_local < 0:
+                is_expired = True
+
+        if not is_expired:
+            all_expired = False
+            if (record.get('attempts') or 0) < 5:
+                if verify_otp_hash(otp, email, record['otp_hash']):
+                    matching_record = record
+                    break
+
+    if all_expired:
+        execute_query(
+            "UPDATE otp_verifications SET used = True, is_used = True WHERE email = %s AND purpose = 'email_verification'",
+            (email,),
+            commit=True
+        )
         return jsonify({'error': 'OTP has expired. Please request a new verification code.'}), 400
 
-    if not verify_otp_hash(otp, email, otp_record['otp_hash']):
-        current_attempts = (otp_record.get('attempts') or 0) + 1
-        execute_query("UPDATE otp_verifications SET attempts = %s, used = %s, is_used = %s WHERE id = %s", (current_attempts, current_attempts >= 5, current_attempts >= 5, otp_record['id']), commit=True)
+    if not matching_record:
+        latest_record = otp_records[0]
+        current_attempts = (latest_record.get('attempts') or 0) + 1
+        execute_query(
+            "UPDATE otp_verifications SET attempts = %s, used = %s, is_used = %s WHERE id = %s",
+            (current_attempts, current_attempts >= 5, current_attempts >= 5, latest_record['id']),
+            commit=True
+        )
         if current_attempts >= 5:
             return jsonify({'error': 'Maximum verification attempts exceeded. Please request a new OTP.'}), 429
         return jsonify({'error': 'Invalid 6-digit OTP code.'}), 400
 
-    execute_query("UPDATE otp_verifications SET used = True, is_used = True WHERE id = %s", (otp_record['id'],), commit=True)
+    # Invalidate ALL active OTPs for this email upon successful verification
+    execute_query("UPDATE otp_verifications SET used = True, is_used = True WHERE email = %s AND purpose = 'email_verification'", (email,), commit=True)
     execute_query("UPDATE users SET email_verified = True WHERE id = %s", (user['id'],), commit=True)
 
     token = generate_jwt_token({
@@ -251,8 +296,8 @@ def resend_otp():
     if purpose == 'email_verification' and user['email_verified']:
         return jsonify({'message': 'Email is already verified.'}), 200
 
-    allowed, cooldown_remaining = check_resend_cooldown(email, purpose)
-    if not allowed:
+    in_cooldown, cooldown_remaining = check_resend_cooldown(email, purpose)
+    if in_cooldown and cooldown_remaining > 0:
         return jsonify({
             'error': f'Please wait {cooldown_remaining} seconds before requesting another code.',
             'cooldown_seconds': cooldown_remaining
@@ -698,46 +743,67 @@ def verify_reset_code():
     if not email or not otp or len(otp) != 6:
         return jsonify({'error': 'Valid email and 6-digit code are required.'}), 400
 
-    otp_record = execute_query(
+    otp_records = execute_query(
         """
         SELECT * FROM otp_verifications
         WHERE email = %s AND purpose = 'password_reset' AND (used = False OR used IS NULL) AND (is_used = False OR is_used IS NULL)
-        ORDER BY created_at DESC LIMIT 1
+        ORDER BY id DESC
         """,
-        (email,), fetchone=True
-    )
+        (email,), fetchall=True
+    ) or []
 
-    if not otp_record:
+    if not otp_records:
         return jsonify({'error': 'Invalid or expired recovery code. Please request a new one.'}), 400
 
-    current_attempts = otp_record.get('attempts') or 0
-    if current_attempts >= 5:
-        execute_query("UPDATE otp_verifications SET used = True, is_used = True WHERE id = %s", (otp_record['id'],), commit=True)
-        return jsonify({'error': 'Too many failed attempts. Please request a new recovery code.'}), 429
+    now_utc = datetime.utcnow()
+    now_local = datetime.now()
 
-    try:
-        expires_at = otp_record['expires_at']
-        if isinstance(expires_at, str):
-            expires_at = datetime.strptime(expires_at.split('.')[0], '%Y-%m-%d %H:%M:%S')
-        if datetime.utcnow() > expires_at:
-            execute_query("UPDATE otp_verifications SET used = True, is_used = True WHERE id = %s", (otp_record['id'],), commit=True)
-            return jsonify({'error': 'Recovery code has expired. Please request a new one.'}), 400
-    except (TypeError, ValueError):
-        return jsonify({'error': 'Invalid recovery code timestamp.'}), 400
+    matching_record = None
+    all_expired = True
 
-    if not verify_otp_hash(otp, email, otp_record['otp_hash']):
-        attempts = current_attempts + 1
-        execute_query("UPDATE otp_verifications SET attempts = %s, used = %s, is_used = %s WHERE id = %s", (attempts, attempts >= 5, attempts >= 5, otp_record['id']), commit=True)
+    for record in otp_records:
+        exp = record.get('expires_at')
+        if isinstance(exp, str):
+            try:
+                exp = datetime.strptime(exp.split('.')[0], '%Y-%m-%d %H:%M:%S')
+            except Exception:
+                try:
+                    exp = datetime.fromisoformat(exp)
+                except Exception:
+                    continue
+
+        is_expired = False
+        if isinstance(exp, datetime):
+            diff_utc = (exp - now_utc).total_seconds()
+            diff_local = (exp - now_local).total_seconds()
+            if diff_utc < 0 and diff_local < 0:
+                is_expired = True
+
+        if not is_expired:
+            all_expired = False
+            if (record.get('attempts') or 0) < 5:
+                if verify_otp_hash(otp, email, record['otp_hash']):
+                    matching_record = record
+                    break
+
+    if all_expired:
+        execute_query("UPDATE otp_verifications SET used = True, is_used = True WHERE email = %s AND purpose = 'password_reset'", (email,), commit=True)
+        return jsonify({'error': 'Recovery code has expired. Please request a new one.'}), 400
+
+    if not matching_record:
+        latest_record = otp_records[0]
+        attempts = (latest_record.get('attempts') or 0) + 1
+        execute_query("UPDATE otp_verifications SET attempts = %s, used = %s, is_used = %s WHERE id = %s", (attempts, attempts >= 5, attempts >= 5, latest_record['id']), commit=True)
         if attempts >= 5:
             return jsonify({'error': 'Too many failed attempts. Please request a new recovery code.'}), 429
         return jsonify({'error': 'Incorrect verification code. Please check and try again.'}), 400
 
-    # Mark OTP as verified/used
-    execute_query("UPDATE otp_verifications SET used = True, is_used = True WHERE id = %s", (otp_record['id'],), commit=True)
+    # Mark ALL password_reset OTPs for this email as used
+    execute_query("UPDATE otp_verifications SET used = True, is_used = True WHERE email = %s AND purpose = 'password_reset'", (email,), commit=True)
 
     # Issue a secure 15-minute reset token
     reset_token = generate_jwt_token({
-        'user_id': otp_record['user_id'],
+        'user_id': matching_record['user_id'],
         'email': email,
         'purpose': 'password_reset_token'
     }, expires_in_hours=0.25)
@@ -785,7 +851,7 @@ def reset_password():
             return jsonify({'error': 'Account not found.'}), 404
         user_id = user['id']
         otp_record = execute_query(
-            "SELECT * FROM otp_verifications WHERE email = %s AND purpose = 'password_reset' AND (used = False OR used IS NULL) ORDER BY created_at DESC LIMIT 1",
+            "SELECT * FROM otp_verifications WHERE email = %s AND purpose = 'password_reset' AND (used = False OR used IS NULL) ORDER BY id DESC LIMIT 1",
             (email,), fetchone=True
         )
         if not otp_record or not verify_otp_hash(otp, email, otp_record['otp_hash']):

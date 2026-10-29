@@ -129,9 +129,7 @@ export const Navbar = () => {
       <header className="navbar-container">
         {/* Left: Brand Logo */}
         <Link to={isAuthenticated ? '/dashboard' : '/'} className="navbar-brand">
-          <div className="brand-logo-mark">
-            <Sparkles size={16} className="brand-sparkle-icon" />
-          </div>
+          <img src="/logo.png" alt="Talent Agent AI" className="brand-logo-image" />
           <span className="brand-text">
             Talent Agent <span className="brand-ai-badge">AI</span>
           </span>

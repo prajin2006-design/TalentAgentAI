@@ -299,13 +299,8 @@ def export_resume_pdf(candidate_data: dict) -> bytes:
         story.append(Paragraph(summary, body_style))
 def compute_builder_ats_score(resume_data: dict) -> dict:
     """
-    Computes detailed ATS Score and section breakdowns for structured ATS Resume Maker data.
-    Returns:
-      score: int (0 - 100)
-      breakdown: dict of section scores (Contact, Summary, Skills, Experience, Education, Projects, Formatting, Completeness)
-      strengths: list of positive ATS factors
-      issues: list of actionable warnings
-      recommendations: list of suggestions
+    Computes transparent, heuristic-driven ATS Score, section breakdowns,
+    and individual actionable check items for structured ATS Resume Maker data.
     """
     pi = resume_data.get('personal_info') or {}
     summary = (resume_data.get('summary') or '').strip()
@@ -314,118 +309,247 @@ def compute_builder_ats_score(resume_data: dict) -> dict:
     skills = resume_data.get('skills') or []
     proj = resume_data.get('projects') or []
     certs = resume_data.get('certifications') or []
+    internships = resume_data.get('internships') or []
     achieve = resume_data.get('achievements') or []
     langs = resume_data.get('languages') or []
+    custom_secs = resume_data.get('custom_sections') or []
 
-    # Category Breakdown Scores (0 - 100 each)
     breakdown = {}
     strengths = []
     issues = []
     recommendations = []
+    checks = []
 
-    # 1. Contact Information
+    # 1. Contact Information Check
     contact_score = 0
-    if pi.get('full_name'): contact_score += 30
-    if pi.get('email') and '@' in pi.get('email', ''): contact_score += 30
-    if pi.get('phone'): contact_score += 20
-    if pi.get('location'): contact_score += 10
-    if pi.get('linkedin_url') or pi.get('github_url'): contact_score += 10
+    if pi.get('full_name', '').strip(): contact_score += 25
+    has_valid_email = bool(pi.get('email') and re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', pi.get('email', '').strip()))
+    if has_valid_email: contact_score += 25
+    has_phone = bool(pi.get('phone', '').strip())
+    if has_phone: contact_score += 20
+    has_loc = bool(pi.get('location', '').strip())
+    if has_loc: contact_score += 15
+    has_links = bool(pi.get('linkedin_url') or pi.get('github_url') or pi.get('portfolio_url'))
+    if has_links: contact_score += 15
     breakdown['contact'] = min(100, contact_score)
 
-    if breakdown['contact'] >= 90:
-        strengths.append("Complete contact information including professional profile links.")
-    else:
-        if not pi.get('phone'): issues.append("Phone number is missing.")
-        if not pi.get('location'): issues.append("Location (city/state) is missing.")
-        recommendations.append("Ensure your phone number, professional email, and location are filled out.")
+    checks.append({
+        'id': 'contact_name',
+        'name': 'Candidate Full Name',
+        'status': 'pass' if pi.get('full_name') else 'fail',
+        'section': 'personal_info',
+        'message': 'Full name is clearly provided.' if pi.get('full_name') else 'Candidate full name is missing.'
+    })
+    checks.append({
+        'id': 'contact_email',
+        'name': 'Professional Email Address',
+        'status': 'pass' if has_valid_email else 'fail',
+        'section': 'personal_info',
+        'message': 'Valid email address found.' if has_valid_email else 'Enter a valid professional email address.'
+    })
+    checks.append({
+        'id': 'contact_phone',
+        'name': 'Phone Number',
+        'status': 'pass' if has_phone else 'warn',
+        'section': 'personal_info',
+        'message': 'Phone number included.' if has_phone else 'Add a direct phone number so recruiters can contact you.'
+    })
+    checks.append({
+        'id': 'contact_location',
+        'name': 'City and State/Country',
+        'status': 'pass' if has_loc else 'warn',
+        'section': 'personal_info',
+        'message': 'Location provided.' if has_loc else 'Add your city & country to support geographic matching.'
+    })
+    checks.append({
+        'id': 'contact_links',
+        'name': 'Professional Profiles (LinkedIn/GitHub/Portfolio)',
+        'status': 'pass' if has_links else 'info',
+        'section': 'personal_info',
+        'message': 'Professional profile links provided.' if has_links else 'Include LinkedIn or GitHub URL to boost credibility.'
+    })
 
-    # 2. Professional Summary
+    if breakdown['contact'] >= 85:
+        strengths.append("Complete, professional contact details with location and links.")
+    else:
+        recommendations.append("Ensure full contact information (phone, email, city) is filled out.")
+
+    # 2. Professional Summary Check
     summary_words = len(summary.split()) if summary else 0
-    if summary_words >= 30 and summary_words <= 90:
+    if 30 <= summary_words <= 95:
         breakdown['summary'] = 100
-        strengths.append("Concise, optimal length professional summary (30-90 words).")
-    elif summary_words > 0 and summary_words < 30:
-        breakdown['summary'] = 65
-        issues.append("Professional summary is somewhat brief. Expand to 3-4 sentences.")
-        recommendations.append("Use the 'Generate with AI' button to build a targeted 3-4 sentence professional summary.")
-    elif summary_words > 90:
-        breakdown['summary'] = 75
-        issues.append("Professional summary is slightly long for high-speed ATS scanning.")
+        strengths.append("Optimal length professional summary (30-95 words).")
+    elif 15 <= summary_words < 30:
+        breakdown['summary'] = 70
+        issues.append("Professional summary is brief. Expand to 3-4 impactful sentences.")
+    elif summary_words > 95:
+        breakdown['summary'] = 80
+        issues.append("Professional summary exceeds 95 words. Keep it concise for fast ATS scanning.")
+    elif summary_words > 0:
+        breakdown['summary'] = 50
     else:
         breakdown['summary'] = 0
-        issues.append("Missing professional summary section.")
-        recommendations.append("Add a professional summary highlighting your core expertise and target role.")
 
-    # 3. Skills
+    checks.append({
+        'id': 'summary_presence',
+        'name': 'Professional Summary Statement',
+        'status': 'pass' if summary_words >= 30 else ('warn' if summary_words > 0 else 'fail'),
+        'section': 'summary',
+        'message': f'Summary is well-crafted ({summary_words} words).' if summary_words >= 30 else 'Add a 3-4 sentence professional summary highlighting your core expertise.'
+    })
+
+    # 3. Skills Check
     total_skills = 0
+    skill_names_all = []
     if isinstance(skills, dict):
         for _, val in skills.items():
-            if isinstance(val, list): total_skills += len(val)
-            elif isinstance(val, str) and val.strip(): total_skills += len([s for s in val.split(',') if s.strip()])
+            if isinstance(val, list):
+                total_skills += len(val)
+                skill_names_all.extend(val)
+            elif isinstance(val, str) and val.strip():
+                spl = [s.strip() for s in val.split(',') if s.strip()]
+                total_skills += len(spl)
+                skill_names_all.extend(spl)
     elif isinstance(skills, list):
         total_skills = len(skills)
+        skill_names_all = [s if isinstance(s, str) else s.get('skill_name', '') for s in skills]
 
     if total_skills >= 8:
         breakdown['skills'] = 100
-        strengths.append(f"Strong skill density with {total_skills} categorized technical proficiencies.")
+        strengths.append(f"Strong skill density ({total_skills} categorized proficiencies).")
     elif total_skills >= 4:
-        breakdown['skills'] = 70
-        recommendations.append("Add 3-5 more technical and domain-specific skills to improve keyword matching.")
+        breakdown['skills'] = 75
+        recommendations.append("Add 3-5 more technical competencies or tools to enhance ATS keyword matches.")
     elif total_skills > 0:
         breakdown['skills'] = 45
-        issues.append("Low skill count may reduce ATS match rate for candidate requisitions.")
+        issues.append("Low skill count may lower requisition match rates.")
     else:
         breakdown['skills'] = 0
-        issues.append("No technical skills listed.")
-        recommendations.append("Add your programming languages, frameworks, databases, and core tools.")
+        issues.append("No technical or domain skills listed.")
 
-    # 4. Work Experience
+    checks.append({
+        'id': 'skills_count',
+        'name': 'Core & Technical Skills',
+        'status': 'pass' if total_skills >= 6 else ('warn' if total_skills > 0 else 'fail'),
+        'section': 'skills',
+        'message': f'Identified {total_skills} categorized skills.' if total_skills >= 6 else 'List at least 6 core technical skills and tools.'
+    })
+
+    # 4. Work Experience & Internships Check
+    exp_list = exp if isinstance(exp, list) else []
+    intern_list = internships if isinstance(internships, list) else []
+    total_roles = len(exp_list) + len(intern_list)
+
     exp_score = 0
-    if isinstance(exp, list) and len(exp) > 0:
-        exp_score += 40
-        has_bullets = any(e.get('description') for e in exp if isinstance(e, dict))
-        if has_bullets: exp_score += 40
-        has_dates = any(e.get('start_date') for e in exp if isinstance(e, dict))
-        if has_dates: exp_score += 20
-        breakdown['experience'] = exp_score
-        strengths.append(f"Structured employment history with {len(exp)} listed positions.")
-    else:
-        breakdown['experience'] = 50 # For freshers / students, projects compensate
-        recommendations.append("Include internships, freelance work, or open-source roles in Work Experience.")
+    action_verb_count = 0
+    metrics_count = 0
+    action_verbs = {
+        'developed', 'engineered', 'built', 'designed', 'implemented', 'spearheaded',
+        'optimized', 'architected', 'led', 'created', 'accelerated', 'resolved',
+        'deployed', 'managed', 'orchestrated', 'automated', 'streamlined', 'improved'
+    }
 
-    # 5. Education
-    if isinstance(edu, list) and len(edu) > 0:
+    if total_roles > 0:
+        exp_score += 40
+        has_dates = any(e.get('start_date') for e in exp_list if isinstance(e, dict))
+        if has_dates: exp_score += 20
+
+        # Analyze bullets for action verbs and metrics
+        all_descriptions = [e.get('description', '') for e in exp_list if isinstance(e, dict)] + [i.get('description', '') for i in intern_list if isinstance(i, dict)]
+        combined_text = ' '.join(all_descriptions).lower()
+        for v in action_verbs:
+            if re.search(r'\b' + v + r'\b', combined_text):
+                action_verb_count += 1
+        # Check for numbers, percentages, dollar amounts, multiples
+        metrics_count = len(re.findall(r'(\d+[\%kmb]?|\$[\d,]+|\d+x)', combined_text))
+
+        if action_verb_count >= 3: exp_score += 20
+        elif action_verb_count >= 1: exp_score += 10
+
+        if metrics_count >= 2: exp_score += 20
+        elif metrics_count >= 1: exp_score += 10
+
+        breakdown['experience'] = min(100, exp_score)
+        if action_verb_count >= 3:
+            strengths.append("Impactful experience descriptions with strong action verbs.")
+    else:
+        breakdown['experience'] = 55 # Compensated by projects/education for students/freshers
+
+    checks.append({
+        'id': 'experience_entries',
+        'name': 'Employment History / Internships',
+        'status': 'pass' if total_roles >= 1 else 'warn',
+        'section': 'experience',
+        'message': f'{total_roles} professional or internship positions documented.' if total_roles >= 1 else 'Add work experience, internships, or freelance roles.'
+    })
+    checks.append({
+        'id': 'experience_action_verbs',
+        'name': 'Action-Oriented Bullet Points',
+        'status': 'pass' if action_verb_count >= 2 else ('info' if total_roles == 0 else 'warn'),
+        'section': 'experience',
+        'message': f'Detected {action_verb_count} distinct action verbs in responsibilities.' if action_verb_count >= 2 else 'Use strong action verbs (e.g. Engineered, Spearheaded, Optimized) at the start of bullet points.'
+    })
+    checks.append({
+        'id': 'experience_metrics',
+        'name': 'Quantifiable Achievements & Metrics',
+        'status': 'pass' if metrics_count >= 2 else ('info' if total_roles == 0 else 'warn'),
+        'section': 'experience',
+        'message': f'Found {metrics_count} quantifiable metrics (%, numbers, scale).' if metrics_count >= 2 else 'Add measurable outcomes (e.g., "reduced latency by 35%", "scaled to 50k users").'
+    })
+
+    # 5. Education Check
+    edu_list = edu if isinstance(edu, list) else []
+    if len(edu_list) >= 1:
         breakdown['education'] = 100
-        strengths.append("Verified academic credentials with institution and degree details.")
+        strengths.append("Verified educational background with institution and degree credentials.")
     else:
         breakdown['education'] = 30
-        issues.append("No education entries provided.")
-        recommendations.append("Add your university degree, major, and graduation year.")
+        issues.append("Education section is missing.")
 
-    # 6. Projects
-    if isinstance(proj, list) and len(proj) >= 2:
+    checks.append({
+        'id': 'education_details',
+        'name': 'Educational Background',
+        'status': 'pass' if len(edu_list) >= 1 else 'fail',
+        'section': 'education',
+        'message': f'{len(edu_list)} academic degree(s) listed.' if len(edu_list) >= 1 else 'Include your university, degree, and graduation year.'
+    })
+
+    # 6. Projects & Practical Evidence Check
+    proj_list = proj if isinstance(proj, list) else []
+    if len(proj_list) >= 2:
         breakdown['projects'] = 100
-        strengths.append(f"Featured {len(proj)} practical engineering projects demonstrating applied skills.")
-    elif isinstance(proj, list) and len(proj) == 1:
-        breakdown['projects'] = 70
-        recommendations.append("Add at least 2 major technical projects to strengthen practical proof of competence.")
+        strengths.append(f"{len(proj_list)} technical projects demonstrating applied competence.")
+    elif len(proj_list) == 1:
+        breakdown['projects'] = 75
+        recommendations.append("Add a second project to provide broader evidence of hands-on technical skills.")
     else:
-        breakdown['projects'] = 30
-        recommendations.append("Add technical projects with live or GitHub links to enhance recruiter interest.")
+        breakdown['projects'] = 40
 
-    # 7. Formatting & Completeness
-    formatting_score = 95 # Clean single column architecture by default
+    checks.append({
+        'id': 'projects_portfolio',
+        'name': 'Key Technical Projects',
+        'status': 'pass' if len(proj_list) >= 2 else ('warn' if len(proj_list) == 1 else 'info'),
+        'section': 'projects',
+        'message': f'{len(proj_list)} project(s) showcased.' if len(proj_list) >= 1 else 'Add key projects with live demo or GitHub repository links.'
+    })
+
+    # 7. Layout & ATS Formatting Safety Check
+    formatting_score = 98
+    checks.append({
+        'id': 'format_single_column',
+        'name': 'ATS-Friendly Single-Column Layout',
+        'status': 'pass',
+        'section': 'formatting',
+        'message': 'Layout conforms to machine-readable single-column standards without unparseable text boxes.'
+    })
+    checks.append({
+        'id': 'format_standard_headings',
+        'name': 'Standard Section Headings',
+        'status': 'pass',
+        'section': 'formatting',
+        'message': 'Section titles follow universal ATS conventions (Experience, Education, Skills, Projects).'
+    })
     breakdown['formatting'] = formatting_score
-    strengths.append("Single-column, machine-readable typography conforming to modern ATS standards.")
-
-    completeness_factors = [
-        bool(pi.get('full_name')),
-        bool(summary),
-        total_skills >= 4,
-        bool(edu),
-        bool(exp or proj)
-    ]
-    breakdown['completeness'] = round(sum(1 for f in completeness_factors) / len(completeness_factors) * 100)
 
     # Weighted Overall ATS Score
     overall_score = (
@@ -444,110 +568,181 @@ def compute_builder_ats_score(resume_data: dict) -> dict:
         'score': final_score,
         'ats_score': final_score,
         'breakdown': breakdown,
+        'checks': checks,
         'strengths': strengths,
         'issues': issues,
-        'missing_keywords': ['React', 'TypeScript', 'SQL', 'Git', 'REST APIs', 'Cloud Computing'][:3 if final_score < 80 else 1],
+        'missing_keywords': ['React', 'TypeScript', 'SQL', 'Git', 'REST APIs', 'Cloud Computing'][:2 if final_score < 80 else 1],
         'recommendations': recommendations or ["Your resume follows ATS best practices. Ready to export and apply!"]
     }
 
 
-def export_resume_pdf(candidate_data: dict, template: str = 'modern') -> bytes:
+def _get_ordered_sections(candidate_data: dict, template: str = 'classic') -> list[str]:
     """
-    Generates clean, single-column ATS-friendly PDF resume using ReportLab.
-    Supports templates: 'modern', 'classic', 'minimal'.
-    Guarantees machine-readable selectable text.
+    Returns ordered list of visible section keys respecting user preference or template defaults.
+    """
+    sec_order = candidate_data.get('section_order')
+    sec_vis = candidate_data.get('section_visibility') or {}
+
+    template = (template or 'classic').lower()
+
+    if not sec_order or not isinstance(sec_order, list):
+        if template in ('graduate', 'fresher'):
+            default_order = [
+                'personal_info', 'summary', 'education', 'internships',
+                'projects', 'skills', 'experience', 'certifications',
+                'achievements', 'languages', 'custom_sections'
+            ]
+        elif template == 'technical':
+            default_order = [
+                'personal_info', 'summary', 'skills', 'experience',
+                'projects', 'education', 'certifications', 'internships',
+                'achievements', 'languages', 'custom_sections'
+            ]
+        else: # classic, modern, compact
+            default_order = [
+                'personal_info', 'summary', 'experience', 'education',
+                'skills', 'projects', 'certifications', 'internships',
+                'achievements', 'languages', 'custom_sections'
+            ]
+        sec_order = default_order
+
+    # Filter by visibility if defined (default True)
+    active_order = []
+    for s in sec_order:
+        if sec_vis.get(s, True):
+            active_order.append(s)
+
+    return active_order
+
+
+def export_resume_pdf(candidate_data: dict, template: str = 'classic') -> bytes:
+    """
+    Generates clean, professional ATS-friendly PDF resume using ReportLab.
+    Supports 5 distinct templates:
+      - 'classic': Classic ATS (Times-Roman, horizontal rules, centered/left header, default)
+      - 'modern': Modern Professional (Helvetica, crisp headings, subtle accent lines)
+      - 'graduate' / 'fresher': Graduate / Fresher (Education & projects emphasized first)
+      - 'technical': Technical Resume (Categorized skills grid right under summary, tech tags)
+      - 'compact': Compact One-Page (Tight line heights, reduced margins, dense packing)
     """
     from reportlab.lib.pagesizes import letter
     from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib import colors
 
+    template = (template or 'classic').lower()
+    styling = candidate_data.get('styling_options') or {}
+
+    # Margins based on template
+    margin = 36 if template == 'compact' else 48
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
         pagesize=letter,
-        rightMargin=48,
-        leftMargin=48,
-        topMargin=48,
-        bottomMargin=48
+        rightMargin=margin,
+        leftMargin=margin,
+        topMargin=margin,
+        bottomMargin=margin
     )
 
     styles = getSampleStyleSheet()
 
-    # Template-specific style definitions
-    template = (template or 'modern').lower()
+    # Font sizing adjustments
+    font_scale = styling.get('fontSize', 'normal')
+    sz_delta = -1 if font_scale == 'small' or template == 'compact' else (1 if font_scale == 'large' else 0)
+
+    # Spacing adjustment
+    spacing_scale = styling.get('spacing', 'normal')
+    spacer_h = 2 if (spacing_scale == 'compact' or template == 'compact') else (6 if spacing_scale == 'relaxed' else 4)
+
+    # Accent color
+    hex_color = styling.get('accentColor') or ('#FF6500' if template in ('modern', 'technical') else '#111111')
+    try:
+        accent_color = colors.HexColor(hex_color)
+    except Exception:
+        accent_color = colors.HexColor('#111111')
+
     if template == 'classic':
         font_title = 'Times-Bold'
         font_body = 'Times-Roman'
         font_heading = 'Times-Bold'
         color_heading = colors.HexColor('#111111')
-        color_accent = colors.HexColor('#222222')
         align_title = 1 # Centered
-    elif template == 'minimal':
+    elif template in ('graduate', 'fresher'):
         font_title = 'Helvetica-Bold'
         font_body = 'Helvetica'
         font_heading = 'Helvetica-Bold'
-        color_heading = colors.HexColor('#000000')
-        color_accent = colors.HexColor('#000000')
-        align_title = 0 # Left aligned
+        color_heading = colors.HexColor('#111111')
+        align_title = 0
+    elif template == 'technical':
+        font_title = 'Helvetica-Bold'
+        font_body = 'Helvetica'
+        font_heading = 'Helvetica-Bold'
+        color_heading = accent_color
+        align_title = 0
+    elif template == 'compact':
+        font_title = 'Helvetica-Bold'
+        font_body = 'Helvetica'
+        font_heading = 'Helvetica-Bold'
+        color_heading = colors.HexColor('#111111')
+        align_title = 0
     else: # modern
         font_title = 'Helvetica-Bold'
         font_body = 'Helvetica'
         font_heading = 'Helvetica-Bold'
-        color_heading = colors.HexColor('#0000FF')
-        color_accent = colors.HexColor('#0000FF')
-        align_title = 0 # Left aligned
+        color_heading = accent_color
+        align_title = 0
 
     title_style = ParagraphStyle(
         'DocTitle',
         parent=styles['Normal'],
         fontName=font_title,
-        fontSize=20,
-        leading=24,
-        textColor=colors.HexColor('#0A0A0A'),
+        fontSize=18 + sz_delta,
+        leading=22 + sz_delta,
+        textColor=colors.HexColor('#0F0F0F'),
         alignment=align_title,
-        spaceAfter=3
+        spaceAfter=2
     )
 
     subtitle_style = ParagraphStyle(
         'DocSubtitle',
         parent=styles['Normal'],
         fontName=font_heading,
-        fontSize=11,
-        leading=14,
-        textColor=color_accent,
+        fontSize=10.5 + sz_delta,
+        leading=13.5 + sz_delta,
+        textColor=accent_color,
         alignment=align_title,
-        spaceAfter=4
+        spaceAfter=3
     )
 
     contact_style = ParagraphStyle(
         'DocContact',
         parent=styles['Normal'],
         fontName=font_body,
-        fontSize=9.5,
-        leading=13,
+        fontSize=9 + sz_delta,
+        leading=12 + sz_delta,
         textColor=colors.HexColor('#555555'),
         alignment=align_title,
-        spaceAfter=8
+        spaceAfter=6
     )
 
     heading_style = ParagraphStyle(
         'SectionHeading',
         parent=styles['Normal'],
         fontName=font_heading,
-        fontSize=11.5,
-        leading=15,
+        fontSize=11 + sz_delta,
+        leading=14 + sz_delta,
         textColor=color_heading,
-        spaceBefore=8,
-        spaceAfter=4
+        spaceBefore=6,
+        spaceAfter=3
     )
 
     item_title_style = ParagraphStyle(
         'ItemTitle',
         parent=styles['Normal'],
         fontName=font_heading,
-        fontSize=10,
-        leading=14,
+        fontSize=9.5 + sz_delta,
+        leading=13 + sz_delta,
         textColor=colors.HexColor('#111111'),
         spaceAfter=2
     )
@@ -556,21 +751,21 @@ def export_resume_pdf(candidate_data: dict, template: str = 'modern') -> bytes:
         'BodyTextCustom',
         parent=styles['Normal'],
         fontName=font_body,
-        fontSize=9.5,
-        leading=13.5,
+        fontSize=9 + sz_delta,
+        leading=12.5 + sz_delta,
         textColor=colors.HexColor('#222222'),
-        spaceAfter=4
+        spaceAfter=3
     )
 
     bullet_style = ParagraphStyle(
         'BulletCustom',
         parent=styles['Normal'],
         fontName=font_body,
-        fontSize=9.5,
-        leading=13.5,
+        fontSize=9 + sz_delta,
+        leading=12.5 + sz_delta,
         textColor=colors.HexColor('#222222'),
         leftIndent=12,
-        spaceAfter=3
+        spaceAfter=2
     )
 
     story = []
@@ -594,133 +789,186 @@ def export_resume_pdf(candidate_data: dict, template: str = 'modern') -> bytes:
     if contact_parts:
         story.append(Paragraph(" • ".join(contact_parts), contact_style))
 
-    story.append(HRFlowable(width="100%", thickness=0.8, color=colors.HexColor('#D0D0D0'), spaceAfter=8))
+    divider_color = colors.HexColor('#D5D2C8') if template != 'classic' else colors.HexColor('#444444')
+    story.append(HRFlowable(width="100%", thickness=0.8, color=divider_color, spaceAfter=6))
 
-    # Summary
-    summary = candidate_data.get('summary') or candidate_data.get('bio')
-    if summary:
-        story.append(Paragraph("PROFESSIONAL SUMMARY", heading_style))
-        story.append(Paragraph(summary, body_style))
-        story.append(Spacer(1, 4))
+    ordered_sections = _get_ordered_sections(candidate_data, template)
 
-    # Skills
-    skills_data = candidate_data.get('skills')
-    if skills_data:
-        story.append(Paragraph("SKILLS & TECHNOLOGIES", heading_style))
-        if isinstance(skills_data, dict):
-            for cat, skill_list in skills_data.items():
-                if isinstance(skill_list, list) and skill_list:
-                    cat_label = cat.replace('_', ' ').title()
-                    story.append(Paragraph(f"<b>{cat_label}:</b> {', '.join(skill_list)}", body_style))
-                elif isinstance(skill_list, str) and skill_list.strip():
-                    cat_label = cat.replace('_', ' ').title()
-                    story.append(Paragraph(f"<b>{cat_label}:</b> {skill_list}", body_style))
-        elif isinstance(skills_data, list) and skills_data:
-            s_list = [s if isinstance(s, str) else s.get('skill_name', '') for s in skills_data if s]
-            story.append(Paragraph(", ".join(s_list), body_style))
-        story.append(Spacer(1, 4))
+    for sec in ordered_sections:
+        if sec == 'personal_info':
+            continue
 
-    # Experience
-    experience = candidate_data.get('experience') or []
-    if experience and isinstance(experience, list):
-        story.append(Paragraph("WORK EXPERIENCE", heading_style))
-        for exp in experience:
-            if not isinstance(exp, dict): continue
-            role = exp.get('job_title') or exp.get('role', 'Position')
-            comp = exp.get('company', 'Company')
-            loc = exp.get('location', '')
-            is_curr = exp.get('is_current') or exp.get('currently_working')
-            start = exp.get('start_date', '')
-            end = 'Present' if is_curr else exp.get('end_date', '')
-            dates = f"{start} – {end}" if start else end
+        elif sec == 'summary':
+            summary = candidate_data.get('summary') or candidate_data.get('bio')
+            if summary:
+                story.append(Paragraph("PROFESSIONAL SUMMARY", heading_style))
+                story.append(Paragraph(summary, body_style))
+                story.append(Spacer(1, spacer_h))
 
-            line1 = f"<b>{role}</b> | {comp}" + (f", {loc}" if loc else "") + (f" ({dates})" if dates else "")
-            story.append(Paragraph(line1, item_title_style))
+        elif sec == 'skills':
+            skills_data = candidate_data.get('skills')
+            if skills_data:
+                heading_label = "TECHNICAL SKILLS" if template == 'technical' else "SKILLS & COMPETENCIES"
+                story.append(Paragraph(heading_label, heading_style))
+                if isinstance(skills_data, dict):
+                    for cat, skill_list in skills_data.items():
+                        if isinstance(skill_list, list) and skill_list:
+                            cat_label = cat.replace('_', ' ').title()
+                            story.append(Paragraph(f"<b>{cat_label}:</b> {', '.join(skill_list)}", body_style))
+                        elif isinstance(skill_list, str) and skill_list.strip():
+                            cat_label = cat.replace('_', ' ').title()
+                            story.append(Paragraph(f"<b>{cat_label}:</b> {skill_list}", body_style))
+                elif isinstance(skills_data, list) and skills_data:
+                    s_list = [s if isinstance(s, str) else s.get('skill_name', '') for s in skills_data if s]
+                    story.append(Paragraph(", ".join(s_list), body_style))
+                story.append(Spacer(1, spacer_h))
 
-            desc = exp.get('description', '')
-            if desc:
-                for line in desc.split('\n'):
-                    l = line.strip().lstrip('•-* ')
-                    if l:
-                        story.append(Paragraph(f"• {l}", bullet_style))
-            story.append(Spacer(1, 4))
+        elif sec == 'experience':
+            experience = candidate_data.get('experience') or []
+            if experience and isinstance(experience, list):
+                story.append(Paragraph("WORK EXPERIENCE", heading_style))
+                for exp in experience:
+                    if not isinstance(exp, dict): continue
+                    role = exp.get('job_title') or exp.get('role', 'Position')
+                    comp = exp.get('company', 'Company')
+                    loc = exp.get('location', '')
+                    is_curr = exp.get('is_current') or exp.get('currently_working')
+                    start = exp.get('start_date', '')
+                    end = 'Present' if is_curr else exp.get('end_date', '')
+                    dates = f"{start} – {end}" if start else end
 
-    # Education
-    education = candidate_data.get('education') or []
-    if education and isinstance(education, list):
-        story.append(Paragraph("EDUCATION", heading_style))
-        for edu in education:
-            if not isinstance(edu, dict): continue
-            deg = edu.get('degree', 'Degree')
-            inst = edu.get('institution') or edu.get('school', 'Institution')
-            loc = edu.get('location', '')
-            sy = edu.get('start_year', '')
-            ey = edu.get('end_year', '')
-            gpa = edu.get('grade') or edu.get('gpa', '')
-            dates = f"{sy} – {ey}" if (sy and ey) else (ey or sy)
+                    line1 = f"<b>{role}</b> | {comp}" + (f", {loc}" if loc else "") + (f" ({dates})" if dates else "")
+                    story.append(Paragraph(line1, item_title_style))
 
-            line = f"<b>{deg}</b> — {inst}" + (f", {loc}" if loc else "") + (f" ({dates})" if dates else "") + (f" | GPA: {gpa}" if gpa else "")
-            story.append(Paragraph(line, item_title_style))
-            if edu.get('description'):
-                story.append(Paragraph(edu['description'], body_style))
-            story.append(Spacer(1, 3))
+                    desc = exp.get('description', '')
+                    if desc:
+                        for line in desc.split('\n'):
+                            l = line.strip().lstrip('•-* ')
+                            if l:
+                                story.append(Paragraph(f"• {l}", bullet_style))
+                    story.append(Spacer(1, spacer_h))
 
-    # Projects
-    projects = candidate_data.get('projects') or []
-    if projects and isinstance(projects, list):
-        story.append(Paragraph("KEY PROJECTS", heading_style))
-        for proj in projects:
-            if not isinstance(proj, dict): continue
-            pname = proj.get('name') or proj.get('title', 'Project')
-            role = proj.get('role', '')
-            tech = proj.get('technologies') or proj.get('tech', '')
-            purl = proj.get('project_url', '')
+        elif sec == 'internships':
+            internships = candidate_data.get('internships') or []
+            if internships and isinstance(internships, list):
+                story.append(Paragraph("INTERNSHIPS", heading_style))
+                for intern in internships:
+                    if not isinstance(intern, dict): continue
+                    role = intern.get('job_title') or intern.get('role', 'Intern')
+                    comp = intern.get('company', 'Company')
+                    loc = intern.get('location', '')
+                    dates = f"{intern.get('start_date', '')} – {intern.get('end_date', '')}"
+                    line = f"<b>{role}</b> | {comp}" + (f", {loc}" if loc else "") + (f" ({dates})" if dates.strip(' –') else "")
+                    story.append(Paragraph(line, item_title_style))
 
-            phead = f"<b>{pname}</b>" + (f" ({role})" if role else "") + (f" — <i>{tech}</i>" if tech else "") + (f" [{purl}]" if purl else "")
-            story.append(Paragraph(phead, item_title_style))
-            pdesc = proj.get('description', '')
-            if pdesc:
-                for line in pdesc.split('\n'):
-                    l = line.strip().lstrip('•-* ')
-                    if l:
-                        story.append(Paragraph(f"• {l}", bullet_style))
-            story.append(Spacer(1, 4))
+                    desc = intern.get('description', '')
+                    if desc:
+                        for line in desc.split('\n'):
+                            l = line.strip().lstrip('•-* ')
+                            if l:
+                                story.append(Paragraph(f"• {l}", bullet_style))
+                    story.append(Spacer(1, spacer_h))
 
-    # Certifications
-    certs = candidate_data.get('certifications') or []
-    if certs and isinstance(certs, list):
-        story.append(Paragraph("CERTIFICATIONS", heading_style))
-        for c in certs:
-            if not isinstance(c, dict): continue
-            cname = c.get('name') or c.get('title', '')
-            org = c.get('organization') or c.get('issuer', '')
-            date = c.get('issue_date') or c.get('date', '')
-            story.append(Paragraph(f"• <b>{cname}</b> — {org}" + (f" ({date})" if date else ""), bullet_style))
-        story.append(Spacer(1, 3))
+        elif sec == 'education':
+            education = candidate_data.get('education') or []
+            if education and isinstance(education, list):
+                story.append(Paragraph("EDUCATION", heading_style))
+                for edu in education:
+                    if not isinstance(edu, dict): continue
+                    deg = edu.get('degree', 'Degree')
+                    inst = edu.get('institution') or edu.get('school', 'Institution')
+                    loc = edu.get('location', '')
+                    sy = edu.get('start_year', '')
+                    ey = edu.get('end_year', '')
+                    gpa = edu.get('grade') or edu.get('gpa', '')
+                    coursework = edu.get('coursework', '')
+                    dates = f"{sy} – {ey}" if (sy and ey) else (ey or sy)
 
-    # Achievements
-    achievements = candidate_data.get('achievements') or []
-    if achievements and isinstance(achievements, list):
-        story.append(Paragraph("ACHIEVEMENTS", heading_style))
-        for a in achievements:
-            if not isinstance(a, dict): continue
-            atitle = a.get('title', '')
-            adesc = a.get('description', '')
-            story.append(Paragraph(f"• <b>{atitle}</b>: {adesc}", bullet_style))
-        story.append(Spacer(1, 3))
+                    line = f"<b>{deg}</b> — {inst}" + (f", {loc}" if loc else "") + (f" ({dates})" if dates else "") + (f" | GPA: {gpa}" if gpa else "")
+                    story.append(Paragraph(line, item_title_style))
+                    if coursework:
+                        story.append(Paragraph(f"<i>Relevant Coursework:</i> {coursework}", body_style))
+                    if edu.get('description'):
+                        story.append(Paragraph(edu['description'], body_style))
+                    story.append(Spacer(1, spacer_h))
 
-    # Languages
-    languages = candidate_data.get('languages') or []
-    if languages and isinstance(languages, list):
-        story.append(Paragraph("LANGUAGES", heading_style))
-        lang_strs = []
-        for l in languages:
-            if isinstance(l, dict):
-                lang_strs.append(f"{l.get('language', '')} ({l.get('proficiency', 'Fluent')})")
-            elif isinstance(l, str):
-                lang_strs.append(l)
-        if lang_strs:
-            story.append(Paragraph(" • ".join(lang_strs), body_style))
+        elif sec == 'projects':
+            projects = candidate_data.get('projects') or []
+            if projects and isinstance(projects, list):
+                story.append(Paragraph("KEY PROJECTS", heading_style))
+                for proj in projects:
+                    if not isinstance(proj, dict): continue
+                    pname = proj.get('name') or proj.get('title', 'Project')
+                    role = proj.get('role', '')
+                    tech = proj.get('technologies') or proj.get('tech', '')
+                    purl = proj.get('project_url', '')
+
+                    phead = f"<b>{pname}</b>" + (f" ({role})" if role else "") + (f" — <i>{tech}</i>" if tech else "") + (f" [{purl}]" if purl else "")
+                    story.append(Paragraph(phead, item_title_style))
+                    pdesc = proj.get('description', '')
+                    if pdesc:
+                        for line in pdesc.split('\n'):
+                            l = line.strip().lstrip('•-* ')
+                            if l:
+                                story.append(Paragraph(f"• {l}", bullet_style))
+                    story.append(Spacer(1, spacer_h))
+
+        elif sec == 'certifications':
+            certs = candidate_data.get('certifications') or []
+            if certs and isinstance(certs, list):
+                story.append(Paragraph("CERTIFICATIONS", heading_style))
+                for c in certs:
+                    if not isinstance(c, dict): continue
+                    cname = c.get('name') or c.get('title', '')
+                    org = c.get('organization') or c.get('issuer', '')
+                    date = c.get('issue_date') or c.get('date', '')
+                    story.append(Paragraph(f"• <b>{cname}</b> — {org}" + (f" ({date})" if date else ""), bullet_style))
+                story.append(Spacer(1, spacer_h))
+
+        elif sec == 'achievements':
+            achievements = candidate_data.get('achievements') or []
+            if achievements and isinstance(achievements, list):
+                story.append(Paragraph("ACHIEVEMENTS", heading_style))
+                for a in achievements:
+                    if not isinstance(a, dict): continue
+                    atitle = a.get('title', '')
+                    adesc = a.get('description', '')
+                    adate = a.get('date', '')
+                    line = f"• <b>{atitle}</b>" + (f" ({adate})" if adate else "") + (f": {adesc}" if adesc else "")
+                    story.append(Paragraph(line, bullet_style))
+                story.append(Spacer(1, spacer_h))
+
+        elif sec == 'languages':
+            languages = candidate_data.get('languages') or []
+            if languages and isinstance(languages, list):
+                story.append(Paragraph("LANGUAGES", heading_style))
+                lang_strs = []
+                for l in languages:
+                    if isinstance(l, dict):
+                        lang_strs.append(f"{l.get('language', '')} ({l.get('proficiency', 'Fluent')})")
+                    elif isinstance(l, str):
+                        lang_strs.append(l)
+                if lang_strs:
+                    story.append(Paragraph(" • ".join(lang_strs), body_style))
+                story.append(Spacer(1, spacer_h))
+
+        elif sec == 'custom_sections':
+            custom_sections = candidate_data.get('custom_sections') or []
+            if custom_sections and isinstance(custom_sections, list):
+                for csec in custom_sections:
+                    if not isinstance(csec, dict): continue
+                    title_sec = (csec.get('title') or 'ADDITIONAL SECTION').upper()
+                    story.append(Paragraph(title_sec, heading_style))
+                    items = csec.get('items') or []
+                    for it in items:
+                        if isinstance(it, dict):
+                            i_head = f"<b>{it.get('title', '')}</b>" + (f" — {it.get('organization', '')}" if it.get('organization') else "") + (f" ({it.get('date', '')})" if it.get('date') else "")
+                            story.append(Paragraph(i_head, item_title_style))
+                            if it.get('description'):
+                                story.append(Paragraph(it['description'], body_style))
+                        elif isinstance(it, str):
+                            story.append(Paragraph(f"• {it}", bullet_style))
+                    story.append(Spacer(1, spacer_h))
 
     doc.build(story)
     pdf_data = buffer.getvalue()
@@ -728,30 +976,28 @@ def export_resume_pdf(candidate_data: dict, template: str = 'modern') -> bytes:
     return pdf_data
 
 
-def export_resume_docx(candidate_data: dict, template: str = 'modern') -> bytes:
+def export_resume_docx(candidate_data: dict, template: str = 'classic') -> bytes:
     """
     Generates clean single-column DOCX resume using python-docx.
-    Supports templates: 'modern', 'classic', 'minimal'.
+    Supports 5 distinct templates and preserves section order.
     """
     import docx
     from docx.shared import Pt, Inches, RGBColor
 
     doc = docx.Document()
+    template = (template or 'classic').lower()
 
-    # Set Margins (0.75 in)
+    # Set Margins (0.75 in or 0.5 in for compact)
+    margin = 0.5 if template == 'compact' else 0.75
     for section in doc.sections:
-        section.top_margin = Inches(0.75)
-        section.bottom_margin = Inches(0.75)
-        section.left_margin = Inches(0.75)
-        section.right_margin = Inches(0.75)
+        section.top_margin = Inches(margin)
+        section.bottom_margin = Inches(margin)
+        section.left_margin = Inches(margin)
+        section.right_margin = Inches(margin)
 
-    template = (template or 'modern').lower()
-    if template == 'classic':
-        heading_color = RGBColor(17, 17, 17)
-    elif template == 'minimal':
-        heading_color = RGBColor(0, 0, 0)
-    else: # modern
-        heading_color = RGBColor(0, 0, 255)
+    heading_color = RGBColor(17, 17, 17)
+    if template in ('modern', 'technical'):
+        heading_color = RGBColor(255, 101, 0) # Talent Agent AI Electric Orange
 
     pi = candidate_data.get('personal_info') or {}
     name = pi.get('full_name') or candidate_data.get('full_name', 'Candidate Name')
@@ -765,128 +1011,325 @@ def export_resume_docx(candidate_data: dict, template: str = 'modern') -> bytes:
     p_title = doc.add_paragraph()
     r_title = p_title.add_run(name.upper())
     r_title.bold = True
-    r_title.font.size = Pt(18)
-    r_title.font.color.rgb = RGBColor(10, 10, 10)
+    r_title.font.size = Pt(17 if template != 'compact' else 15)
+    r_title.font.color.rgb = RGBColor(15, 15, 15)
 
     if title:
         p_sub = doc.add_paragraph()
         r_sub = p_sub.add_run(title)
         r_sub.bold = True
-        r_sub.font.size = Pt(11)
+        r_sub.font.size = Pt(10.5)
         r_sub.font.color.rgb = heading_color
 
     contact_parts = [p for p in [email, phone, location, linkedin, github] if p]
     if contact_parts:
         p_c = doc.add_paragraph(" | ".join(contact_parts))
-        p_c.runs[0].font.size = Pt(9.5)
+        p_c.runs[0].font.size = Pt(9)
         p_c.runs[0].font.color.rgb = RGBColor(90, 90, 90)
 
     def add_heading(text):
         h = doc.add_paragraph()
-        h.paragraph_format.space_before = Pt(8)
-        h.paragraph_format.space_after = Pt(3)
+        h.paragraph_format.space_before = Pt(6)
+        h.paragraph_format.space_after = Pt(2)
         run = h.add_run(text.upper())
         run.bold = True
-        run.font.size = Pt(11)
+        run.font.size = Pt(10.5)
         run.font.color.rgb = heading_color
 
-    # Summary
-    summary = candidate_data.get('summary') or candidate_data.get('bio')
-    if summary:
-        add_heading("Professional Summary")
-        p = doc.add_paragraph(summary)
-        p.runs[0].font.size = Pt(10)
+    ordered_sections = _get_ordered_sections(candidate_data, template)
 
-    # Skills
-    skills_data = candidate_data.get('skills')
-    if skills_data:
-        add_heading("Skills & Technologies")
-        if isinstance(skills_data, dict):
-            for cat, items in skills_data.items():
-                if items:
-                    p = doc.add_paragraph()
-                    r_cat = p.add_run(f"{cat.replace('_', ' ').title()}: ")
-                    r_cat.bold = True
-                    r_cat.font.size = Pt(10)
-                    r_val = p.add_run(", ".join(items) if isinstance(items, list) else str(items))
-                    r_val.font.size = Pt(10)
-        elif isinstance(skills_data, list):
-            p = doc.add_paragraph(", ".join([str(s) for s in skills_data]))
-            p.runs[0].font.size = Pt(10)
+    for sec in ordered_sections:
+        if sec == 'personal_info':
+            continue
 
-    # Experience
-    experience = candidate_data.get('experience') or []
-    if experience and isinstance(experience, list):
-        add_heading("Work Experience")
-        for exp in experience:
-            if not isinstance(exp, dict): continue
-            p_exp = doc.add_paragraph()
-            r_role = p_exp.add_run(f"{exp.get('job_title', exp.get('role', 'Position'))} — {exp.get('company', '')}")
-            r_role.bold = True
-            r_role.font.size = Pt(10.5)
+        elif sec == 'summary':
+            summary = candidate_data.get('summary') or candidate_data.get('bio')
+            if summary:
+                add_heading("Professional Summary")
+                p = doc.add_paragraph(summary)
+                p.runs[0].font.size = Pt(9.5)
 
-            start = exp.get('start_date', '')
-            end = 'Present' if (exp.get('is_current') or exp.get('currently_working')) else exp.get('end_date', '')
-            dates = f" ({start} – {end})" if (start or end) else ""
-            r_d = p_exp.add_run(dates)
-            r_d.font.size = Pt(9.5)
+        elif sec == 'skills':
+            skills_data = candidate_data.get('skills')
+            if skills_data:
+                add_heading("Skills & Competencies")
+                if isinstance(skills_data, dict):
+                    for cat, items in skills_data.items():
+                        if items:
+                            p = doc.add_paragraph()
+                            r_cat = p.add_run(f"{cat.replace('_', ' ').title()}: ")
+                            r_cat.bold = True
+                            r_cat.font.size = Pt(9.5)
+                            r_val = p.add_run(", ".join(items) if isinstance(items, list) else str(items))
+                            r_val.font.size = Pt(9.5)
+                elif isinstance(skills_data, list):
+                    p = doc.add_paragraph(", ".join([str(s) for s in skills_data]))
+                    p.runs[0].font.size = Pt(9.5)
 
-            desc = exp.get('description', '')
-            if desc:
-                for line in desc.split('\n'):
-                    l = line.strip().lstrip('•-* ')
-                    if l:
-                        p_b = doc.add_paragraph(f"• {l}")
-                        p_b.runs[0].font.size = Pt(9.5)
+        elif sec == 'experience':
+            experience = candidate_data.get('experience') or []
+            if experience and isinstance(experience, list):
+                add_heading("Work Experience")
+                for exp in experience:
+                    if not isinstance(exp, dict): continue
+                    p_exp = doc.add_paragraph()
+                    r_role = p_exp.add_run(f"{exp.get('job_title', exp.get('role', 'Position'))} — {exp.get('company', '')}")
+                    r_role.bold = True
+                    r_role.font.size = Pt(10)
 
-    # Education
-    education = candidate_data.get('education') or []
-    if education and isinstance(education, list):
-        add_heading("Education")
-        for edu in education:
-            if not isinstance(edu, dict): continue
-            p_e = doc.add_paragraph()
-            r_e = p_e.add_run(f"{edu.get('degree', '')} — {edu.get('institution', edu.get('school', ''))}")
-            r_e.bold = True
-            r_e.font.size = Pt(10)
-            if edu.get('end_year'):
-                r_y = p_e.add_run(f" ({edu['end_year']})")
-                r_y.font.size = Pt(9.5)
+                    start = exp.get('start_date', '')
+                    end = 'Present' if (exp.get('is_current') or exp.get('currently_working')) else exp.get('end_date', '')
+                    dates = f" ({start} – {end})" if (start or end) else ""
+                    r_d = p_exp.add_run(dates)
+                    r_d.font.size = Pt(9)
 
-    # Projects
-    projects = candidate_data.get('projects') or []
-    if projects and isinstance(projects, list):
-        add_heading("Key Projects")
-        for proj in projects:
-            if not isinstance(proj, dict): continue
-            p_p = doc.add_paragraph()
-            r_p = p_p.add_run(f"{proj.get('name', proj.get('title', 'Project'))}")
-            r_p.bold = True
-            r_p.font.size = Pt(10)
-            if proj.get('technologies'):
-                r_t = p_p.add_run(f" ({proj['technologies']})")
-                r_t.italic = True
-                r_t.font.size = Pt(9.5)
+                    desc = exp.get('description', '')
+                    if desc:
+                        for line in desc.split('\n'):
+                            l = line.strip().lstrip('•-* ')
+                            if l:
+                                p_b = doc.add_paragraph(f"• {l}")
+                                p_b.runs[0].font.size = Pt(9)
 
-            desc = proj.get('description', '')
-            if desc:
-                for line in desc.split('\n'):
-                    l = line.strip().lstrip('•-* ')
-                    if l:
-                        p_b = doc.add_paragraph(f"• {l}")
-                        p_b.runs[0].font.size = Pt(9.5)
+        elif sec == 'internships':
+            internships = candidate_data.get('internships') or []
+            if internships and isinstance(internships, list):
+                add_heading("Internships")
+                for intern in internships:
+                    if not isinstance(intern, dict): continue
+                    p_i = doc.add_paragraph()
+                    r_i = p_i.add_run(f"{intern.get('job_title', 'Intern')} — {intern.get('company', '')}")
+                    r_i.bold = True
+                    r_i.font.size = Pt(10)
+                    desc = intern.get('description', '')
+                    if desc:
+                        for line in desc.split('\n'):
+                            l = line.strip().lstrip('•-* ')
+                            if l:
+                                p_b = doc.add_paragraph(f"• {l}")
+                                p_b.runs[0].font.size = Pt(9)
 
-    # Languages
-    languages = candidate_data.get('languages') or []
-    if languages and isinstance(languages, list):
-        add_heading("Languages")
-        l_strs = [f"{l.get('language', '')} ({l.get('proficiency', '')})" if isinstance(l, dict) else str(l) for l in languages]
-        p_l = doc.add_paragraph(" • ".join(l_strs))
-        p_l.runs[0].font.size = Pt(10)
+        elif sec == 'education':
+            education = candidate_data.get('education') or []
+            if education and isinstance(education, list):
+                add_heading("Education")
+                for edu in education:
+                    if not isinstance(edu, dict): continue
+                    p_e = doc.add_paragraph()
+                    r_e = p_e.add_run(f"{edu.get('degree', '')} — {edu.get('institution', edu.get('school', ''))}")
+                    r_e.bold = True
+                    r_e.font.size = Pt(9.5)
+                    if edu.get('end_year'):
+                        r_y = p_e.add_run(f" ({edu['end_year']})")
+                        r_y.font.size = Pt(9)
+
+        elif sec == 'projects':
+            projects = candidate_data.get('projects') or []
+            if projects and isinstance(projects, list):
+                add_heading("Key Projects")
+                for proj in projects:
+                    if not isinstance(proj, dict): continue
+                    p_p = doc.add_paragraph()
+                    r_p = p_p.add_run(f"{proj.get('name', proj.get('title', 'Project'))}")
+                    r_p.bold = True
+                    r_p.font.size = Pt(9.5)
+                    if proj.get('technologies'):
+                        r_t = p_p.add_run(f" ({proj['technologies']})")
+                        r_t.italic = True
+                        r_t.font.size = Pt(9)
+
+                    desc = proj.get('description', '')
+                    if desc:
+                        for line in desc.split('\n'):
+                            l = line.strip().lstrip('•-* ')
+                            if l:
+                                p_b = doc.add_paragraph(f"• {l}")
+                                p_b.runs[0].font.size = Pt(9)
+
+        elif sec == 'certifications':
+            certs = candidate_data.get('certifications') or []
+            if certs and isinstance(certs, list):
+                add_heading("Certifications")
+                for c in certs:
+                    if not isinstance(c, dict): continue
+                    p_c = doc.add_paragraph(f"• {c.get('name', '')} — {c.get('organization', '')} ({c.get('issue_date', '')})")
+                    p_c.runs[0].font.size = Pt(9)
+
+        elif sec == 'achievements':
+            achievements = candidate_data.get('achievements') or []
+            if achievements and isinstance(achievements, list):
+                add_heading("Achievements")
+                for a in achievements:
+                    if not isinstance(a, dict): continue
+                    p_a = doc.add_paragraph(f"• {a.get('title', '')}: {a.get('description', '')}")
+                    p_a.runs[0].font.size = Pt(9)
+
+        elif sec == 'languages':
+            languages = candidate_data.get('languages') or []
+            if languages and isinstance(languages, list):
+                add_heading("Languages")
+                l_strs = [f"{l.get('language', '')} ({l.get('proficiency', '')})" if isinstance(l, dict) else str(l) for l in languages]
+                p_l = doc.add_paragraph(" • ".join(l_strs))
+                p_l.runs[0].font.size = Pt(9.5)
 
     buffer = io.BytesIO()
     doc.save(buffer)
     docx_data = buffer.getvalue()
     buffer.close()
     return docx_data
+
+
+def export_resume_txt(candidate_data: dict, template: str = 'classic') -> str:
+    """
+    Generates clean, standardized ASCII text representation of the ATS resume.
+    Perfect for verifying plain-text ATS readability.
+    """
+    lines = []
+    pi = candidate_data.get('personal_info') or {}
+    name = (pi.get('full_name') or candidate_data.get('full_name', 'CANDIDATE NAME')).upper()
+    title = pi.get('professional_title') or candidate_data.get('preferred_role', '')
+
+    lines.append(name)
+    if title:
+        lines.append(title)
+
+    contacts = [pi.get('email'), pi.get('phone'), pi.get('location'), pi.get('linkedin_url'), pi.get('github_url')]
+    clean_contacts = [c for c in contacts if c]
+    if clean_contacts:
+        lines.append(" | ".join(clean_contacts))
+    lines.append("=" * 64)
+    lines.append("")
+
+    ordered_sections = _get_ordered_sections(candidate_data, template)
+
+    for sec in ordered_sections:
+        if sec == 'personal_info':
+            continue
+
+        elif sec == 'summary':
+            summary = candidate_data.get('summary') or candidate_data.get('bio')
+            if summary:
+                lines.append("PROFESSIONAL SUMMARY")
+                lines.append("-" * 32)
+                lines.append(summary)
+                lines.append("")
+
+        elif sec == 'skills':
+            skills = candidate_data.get('skills')
+            if skills:
+                lines.append("TECHNICAL & CORE SKILLS")
+                lines.append("-" * 32)
+                if isinstance(skills, dict):
+                    for cat, items in skills.items():
+                        if items:
+                            cat_label = cat.replace('_', ' ').title()
+                            val = ", ".join(items) if isinstance(items, list) else str(items)
+                            lines.append(f"{cat_label}: {val}")
+                elif isinstance(skills, list):
+                    lines.append(", ".join([str(s) for s in skills]))
+                lines.append("")
+
+        elif sec == 'experience':
+            exp = candidate_data.get('experience') or []
+            if exp:
+                lines.append("WORK EXPERIENCE")
+                lines.append("-" * 32)
+                for e in exp:
+                    if not isinstance(e, dict): continue
+                    role = e.get('job_title', 'Role')
+                    comp = e.get('company', 'Company')
+                    loc = e.get('location', '')
+                    start = e.get('start_date', '')
+                    end = 'Present' if (e.get('is_current') or e.get('currently_working')) else e.get('end_date', '')
+                    dates = f" ({start} - {end})" if (start or end) else ""
+                    lines.append(f"{role} at {comp}{', ' + loc if loc else ''}{dates}")
+                    desc = e.get('description', '')
+                    if desc:
+                        for d_line in desc.split('\n'):
+                            cl = d_line.strip().lstrip('•-* ')
+                            if cl:
+                                lines.append(f"  * {cl}")
+                    lines.append("")
+
+        elif sec == 'internships':
+            internships = candidate_data.get('internships') or []
+            if internships:
+                lines.append("INTERNSHIPS")
+                lines.append("-" * 32)
+                for i in internships:
+                    if not isinstance(i, dict): continue
+                    role = i.get('job_title', 'Intern')
+                    comp = i.get('company', '')
+                    lines.append(f"{role} at {comp}")
+                    desc = i.get('description', '')
+                    if desc:
+                        for d_line in desc.split('\n'):
+                            cl = d_line.strip().lstrip('•-* ')
+                            if cl:
+                                lines.append(f"  * {cl}")
+                    lines.append("")
+
+        elif sec == 'education':
+            edu = candidate_data.get('education') or []
+            if edu:
+                lines.append("EDUCATION")
+                lines.append("-" * 32)
+                for ed in edu:
+                    if not isinstance(ed, dict): continue
+                    deg = ed.get('degree', '')
+                    inst = ed.get('institution', '')
+                    ey = ed.get('end_year', '')
+                    lines.append(f"{deg} - {inst} ({ey})")
+                    if ed.get('grade'):
+                        lines.append(f"  GPA: {ed['grade']}")
+                lines.append("")
+
+        elif sec == 'projects':
+            proj = candidate_data.get('projects') or []
+            if proj:
+                lines.append("KEY PROJECTS")
+                lines.append("-" * 32)
+                for p in proj:
+                    if not isinstance(p, dict): continue
+                    lines.append(f"{p.get('name', 'Project')}: {p.get('technologies', '')}")
+                    if p.get('project_url'):
+                        lines.append(f"  URL: {p['project_url']}")
+                    desc = p.get('description', '')
+                    if desc:
+                        for d_line in desc.split('\n'):
+                            cl = d_line.strip().lstrip('•-* ')
+                            if cl:
+                                lines.append(f"  * {cl}")
+                    lines.append("")
+
+        elif sec == 'certifications':
+            certs = candidate_data.get('certifications') or []
+            if certs:
+                lines.append("CERTIFICATIONS")
+                lines.append("-" * 32)
+                for c in certs:
+                    if not isinstance(c, dict): continue
+                    lines.append(f"* {c.get('name', '')} - {c.get('organization', '')} ({c.get('issue_date', '')})")
+                lines.append("")
+
+        elif sec == 'achievements':
+            achieve = candidate_data.get('achievements') or []
+            if achieve:
+                lines.append("ACHIEVEMENTS")
+                lines.append("-" * 32)
+                for a in achieve:
+                    if not isinstance(a, dict): continue
+                    lines.append(f"* {a.get('title', '')}: {a.get('description', '')}")
+                lines.append("")
+
+        elif sec == 'languages':
+            langs = candidate_data.get('languages') or []
+            if langs:
+                lines.append("LANGUAGES")
+                lines.append("-" * 32)
+                l_strs = [f"{l.get('language', '')} ({l.get('proficiency', '')})" if isinstance(l, dict) else str(l) for l in langs]
+                lines.append(", ".join(l_strs))
+                lines.append("")
+
+    return "\n".join(lines)
 

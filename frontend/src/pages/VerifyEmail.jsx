@@ -18,6 +18,7 @@ export const VerifyEmail = () => {
   const [loading, setLoading] = useState(false);
   const [isVerifiedSuccess, setIsVerifiedSuccess] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(45);
+  const [isResending, setIsResending] = useState(false);
 
   const inputRefs = useRef([]);
 
@@ -88,15 +89,16 @@ export const VerifyEmail = () => {
   };
 
   const handleResend = async () => {
-    if (resendCooldown > 0) return;
+    if (resendCooldown > 0 || isResending) return;
     setError('');
     setMessage('');
+    setIsResending(true);
 
     try {
       const res = await resendOtp(emailInput);
       if (res && res.success) {
         setMessage('A fresh verification code has been sent to your email.');
-        setResendCooldown(45);
+        setResendCooldown(res.cooldown_seconds || 45);
         setOtpDigits(['', '', '', '', '', '']);
         inputRefs.current[0]?.focus();
       } else {
@@ -104,6 +106,8 @@ export const VerifyEmail = () => {
       }
     } catch (err) {
       setError(err.message || "Couldn't resend code. Please try again.");
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -180,9 +184,11 @@ export const VerifyEmail = () => {
                 <button
                   type="button"
                   onClick={handleResend}
+                  disabled={isResending}
                   className="btn-resend-link"
                 >
-                  <RotateCw size={14} /> Resend code
+                  <RotateCw size={14} className={isResending ? 'animate-spin' : ''} />
+                  {isResending ? 'Sending fresh code...' : 'Resend code'}
                 </button>
               )}
             </div>
