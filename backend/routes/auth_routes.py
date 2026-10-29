@@ -481,7 +481,7 @@ def admin_login():
     )
     return resp, 200
 
-@auth_bp.route('/google', methods=['POST'])
+@auth_bp.route('/google', methods=['GET', 'POST'])
 @auth_bp.route('/google/callback', methods=['GET', 'POST'])
 def google_auth():
     """

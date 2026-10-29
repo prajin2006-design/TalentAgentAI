@@ -122,7 +122,16 @@ export const authAPI = {
   resendOtp: (payload) => request('/auth/resend-otp', { method: 'POST', body: JSON.stringify(payload) }),
   login: (payload) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
   getGoogleConfig: () => request('/auth/google/config', { method: 'GET' }),
-  googleAuth: (payload) => request('/auth/google', { method: 'POST', body: JSON.stringify(payload) }),
+  googleAuth: async (payload) => {
+    try {
+      return await request('/auth/google', { method: 'POST', body: JSON.stringify(payload) });
+    } catch (err) {
+      if (err.status === 404) {
+        return await request('/auth/google/callback', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      throw err;
+    }
+  },
   forgotPassword: (payload) => request('/auth/forgot-password', { method: 'POST', body: JSON.stringify(payload) }),
   verifyResetCode: (payload) => request('/auth/verify-reset-code', { method: 'POST', body: JSON.stringify(payload) }),
   resetPassword: (payload) => request('/auth/reset-password', { method: 'POST', body: JSON.stringify(payload) }),
